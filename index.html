@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>성격 프로파일 검사 116</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans KR", Arial, sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(720px, calc(100% - 28px));
+      margin: 32px auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.06);
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+
+    .muted {
+      color: #6b7280;
+      line-height: 1.65;
+    }
+
+    .name-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #d6d9df;
+      border-radius: 12px;
+      margin: 12px 0 20px;
+    }
+
+    .primary,
+    .secondary,
+    .danger {
+      border: 0;
+      padding: 13px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #222;
+      color: white;
+    }
+
+    .secondary {
+      background: #eceef2;
+      color: #222;
+    }
+
+    .danger {
+      background: #fff0f0;
+      color: #a40000;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #666;
+    }
+
+    .progress {
+      height: 9px;
+      background: #e8e9ed;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #222;
+      width: 0;
+      transition: width .2s ease;
+    }
+
+    .question-number {
+      font-size: 14px;
+      color: #777;
+      margin-bottom: 12px;
+    }
+
+    .question {
+      min-height: 105px;
+      font-size: 23px;
+      line-height: 1.55;
+      font-weight: 650;
+      display: flex;
+      align-items: center;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      color: #777;
+      font-size: 12px;
+      margin: 22px 4px 8px;
+    }
+
+    .scores {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 9px;
+    }
+
+    .score {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 2px solid #d5d8de;
+      background: white;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: .12s ease;
+    }
+
+    .score:hover {
+      transform: translateY(-2px);
+      border-color: #777;
+    }
+
+    .score.selected {
+      background: #222;
+      color: white;
+      border-color: #222;
+    }
+
+    .meaning {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+      text-align: center;
+      color: #777;
+      font-size: 10px;
+    }
+
+    .navigation {
+      margin-top: 32px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .navigation button {
+      flex: 1;
+    }
+
+    .auto-next {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #666;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .major-score {
+      border-bottom: 1px solid #eee;
+      padding: 18px 0;
+    }
+
+    .major-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .major-title {
+      font-size: 19px;
+      font-weight: 750;
+    }
+
+    .major-number {
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .subscale {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .result-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 22px 0;
+    }
+
+    .result-actions button {
+      flex: 1;
+      min-width: 135px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 230px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 14px;
+      resize: vertical;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .notice {
+      padding: 14px 16px;
+      background: #f4f5f7;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 16px 0;
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        margin: 14px auto;
+        width: calc(100% - 20px);
+      }
+
+      .card {
+        padding: 21px 17px;
+        border-radius: 16px;
+      }
+
+      .question {
+        min-height: 130px;
+        font-size: 20px;
+      }
+
+      .scores {
+        gap: 6px;
+      }
+
+      .score {
+        font-size: 17px;
+      }
+
+      .meaning {
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- 시작 화면 -->
+  <section id="startScreen" class="card">
+    <h1>성격 프로파일 검사</h1>
+
+    <p class="muted">
+      총 116문항입니다.<br>
+      이상적인 모습이 아니라 <strong>최근 몇 년간 실제로 반복해서 나타난 모습</strong>을
+      기준으로 답해주세요.
+    </p>
+
+    <div class="notice">
+      1 = 전혀 아니다<br>
+      2 = 아닌 편이다<br>
+      3 = 반반이다 / 상황에 따라 다르다<br>
+      4 = 그런 편이다<br>
+      5 = 매우 그렇다
+    </div>
+
+    <label>
+      이름 또는 구분용 닉네임
+    </label>
+
+    <input
+      id="nameInput"
+      class="name-input"
+      placeholder="예: 홍길동"
+    />
+
+    <button id="startButton" class="primary">
+      검사 시작
+    </button>
+  </section>
+
+
+  <!-- 검사 화면 -->
+  <section id="testScreen" class="card hidden">
+
+    <div class="progress-info">
+      <span id="progressText"></span>
+      <span id="answeredText"></span>
+    </div>
+
+    <div class="progress">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <div id="questionNumber" class="question-number"></div>
+    <div id="questionText" class="question"></div>
+
+    <div class="scale-labels">
+      <span>전혀 아니다</span>
+      <span>매우 그렇다</span>
+    </div>
+
+    <div id="scoreButtons" class="scores"></div>
+
+    <div class="meaning">
+      <span>1</span>
+      <span>2</span>
+      <span>3</span>
+      <span>4</span>
+      <span>5</span>
+    </div>
+
+    <label class="auto-next">
+      <input type="checkbox" id="autoNext" checked>
+      답을 선택하면 자동으로 다음 문항으로 이동
+    </label>
+
+    <div class="navigation">
+      <button id="prevButton" class="secondary">이전</button>
+      <button id="nextButton" class="primary">다음</button>
+    </div>
+  </section>
+
+
+  <!-- 결과 화면 -->
+  <section id="resultScreen" class="card hidden">
+
+    <h1>검사 결과</h1>
+
+    <p id="resultName" class="muted"></p>
+
+    <div class="notice">
+      점수는 1.00~5.00 범위입니다.
+      이 검사는 TCI의 이론적 성격 차원을 참고해 새로 만든 비표준화 자기보고 척도로,
+      의학적·임상적 진단용 검사가 아닙니다.
+    </div>
+
+    <div id="majorResults"></div>
+
+    <div class="result-actions">
+      <button id="copySummary" class="primary">
+        결과 복사
+      </button>
+
+      <button id="copyFull" class="secondary">
+        전체 응답 복사
+      </button>
+
+      <button id="restartButton" class="danger">
+        검사 초기화
+      </button>
+    </div>
+
+    <h3>분석용 원자료</h3>
+    <p class="muted">
+      이 내용을 그대로 ChatGPT에 붙여주면 세부 프로파일과 두 사람 비교 분석을 할 수 있습니다.
+    </p>
+
+    <textarea id="rawOutput" readonly></textarea>
+
+  </section>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   1. 검사 문항
+========================================================= */
+
+const questions = [
+
+"완성도를 조금 높이기 위해 많은 시간을 더 쓰는 것은 비효율적이라고 느끼는 편이다.",
+"오랫동안 중요하게 여긴 가치들은 일상의 습관에도 반영되어 있다.",
+"아무도 보지 않아도 부당한 이익을 얻는 일은 피하려고 한다.",
+"아직 일어나지 않은 문제도 미리 걱정하며 여러 경우를 생각하는 편이다.",
+"혼자 결정한 일이라면 다른 사람이 좋아하지 않아도 계속할 수 있는 편이다.",
+"내가 지금보다 다른 사람이었으면 좋겠다는 생각을 자주 하는 편이다.",
+"흥분되거나 화가 난 순간에도 바로 행동하지 않고 한 번 멈추는 편이다.",
+"목표를 세우면 이전보다 나아졌다는 결과를 확인하고 싶어 한다.",
+"가까운 사람에게 지지받지 못하면 자신감이 흔들릴 때가 있다.",
+"상대의 감정보다 논리적으로 맞고 틀린지를 파악하는 것이 훨씬 중요하다.",
+
+"같은 일을 오래 반복하면 필요성을 알아도 손을 놓고 싶어지는 편이다.",
+"규칙이나 절차가 비효율적으로 느껴지면 내 방식대로 바꾸고 싶어진다.",
+"일이 잘못되면 상황이나 다른 사람 때문에 어쩔 수 없었던 부분을 먼저 생각하는 편이다.",
+"영화나 이야기에서 누군가의 사연을 보면 쉽게 마음이 움직이는 편이다.",
+"아무리 흥미로운 활동이라도 나를 잊을 정도로 빠져드는 일은 드문 편이다.",
+"정보가 충분하지 않아도 필요하면 일단 결정하고 움직일 수 있다.",
+"중요하다고 생각하는 원칙은 특별히 의식하지 않아도 행동에 자연스럽게 나타나는 편이다.",
+"새로운 경험보다는 이미 잘 아는 방식 안에서 움직이는 것이 더 편하다.",
+"마음에 드는 것을 위해서라면 예정보다 돈이나 시간을 더 쓰는 편이다.",
+"내가 맡은 일은 스스로 납득할 만한 수준까지 다듬는 편이다.",
+
+"옳다고 생각하는 행동도 상황에 따라 자주 미루거나 건너뛰는 편이다.",
+"상황만 허락한다면 원칙보다 내 이익을 우선할 수도 있다고 생각하는 편이다.",
+"바쁜 날이 이어져도 몸과 마음의 기운이 쉽게 떨어지지는 않는다.",
+"내 일이 아니라면 다른 사람의 문제에 굳이 개입하지 않는 편이다.",
+"계획이 갑자기 바뀌어도 상황을 보며 대응하면 된다고 생각하는 편이다.",
+"해야 할 일이 생기면 최소한만 하기보다 제대로 해보고 싶은 편이다.",
+"좋은 일이 예상되어도 혹시 문제가 생길 부분부터 먼저 살펴보는 편이다.",
+"생활방식이 나와 달라도 남에게 피해를 주지 않는다면 존중할 수 있다.",
+"다른 사람이 기뻐하거나 슬퍼하는 모습을 보면 나도 감정적으로 영향을 받는다.",
+"알고 있는 것과 실제로 하는 행동 사이에 차이가 큰 편이다.",
+
+"내 기준에 맞지 않는 사람에게는 자연스럽게 부정적인 평가가 먼저 드는 편이다.",
+"스트레스를 많이 받은 뒤에는 회복하는 데 꽤 시간이 필요한 편이다.",
+"처음 가보는 곳이나 새로운 활동을 경험하면 기분이 살아나는 편이다.",
+"논리적으로 완전히 설명되지 않는 경험에도 의미가 있을 수 있다고 생각한다.",
+"예상 밖의 문제가 생기면 어디서부터 손대야 할지 몰라 멈추는 경우가 많다.",
+"내게 불리하더라도 약속이나 기준을 지켜야 한다고 느끼는 경우가 많다.",
+"내 선택으로 생긴 결과는 좋든 나쁘든 내 몫이라고 생각하는 편이다.",
+"몇 년 뒤 어떤 방향으로 살고 싶은지 나름의 기준이 있다.",
+"처음 해보는 일을 시작할 때 무엇이 생길지 모른다는 점이 부담스럽다.",
+"내 장점뿐 아니라 부족한 점도 내 일부로 받아들이는 편이다.",
+
+"상식에서 많이 벗어난 사람은 이해하려 애쓸 필요가 없다고 느끼는 편이다.",
+"일이나 물건이 일정한 방식으로 정리되어 있으면 마음이 편하다.",
+"피곤하거나 지루해도 중요한 일이라면 일정 수준까지 계속할 수 있다.",
+"한번 신뢰를 크게 깨뜨린 사람은 이유와 상관없이 오래 용서하기 어렵다.",
+"처음 해보는 문제도 필요한 정보를 찾아가며 해결해볼 수 있다고 느낀다.",
+"여행이나 여가에서 처음 보는 장소를 일부러 찾아가는 편이다.",
+"일이 예상보다 오래 걸리면 다른 일로 넘어가고 싶은 마음이 강해진다.",
+"사람과의 관계가 끝나도 비교적 빨리 마음을 정리하는 편이다.",
+"과거에 아쉬운 선택이 있어도 현재의 나를 전반적으로 인정할 수 있다.",
+"음악·예술·자연·기도·창작 같은 경험에서 나를 잠시 잊는 듯한 순간이 있다.",
+
+"평균 정도로 해내는 것보다 내가 할 수 있는 수준을 더 높이고 싶다.",
+"즐거운 경험에는 비용이 조금 더 들더라도 아깝지 않다고 느끼는 편이다.",
+"검증하거나 설명하기 어려운 영적·초월적 해석은 받아들이기 힘든 편이다.",
+"나와 직접 관련 없는 사람들의 삶은 내 삶과 별개라고 느끼는 편이다.",
+"정해진 순서나 규칙이 있으면 특별한 이유가 없는 한 그대로 따르는 편이다.",
+"문제가 생기면 내가 바꿀 수 있었던 부분을 먼저 돌아본다.",
+"처음 만난 사람에게도 필요한 말은 비교적 편하게 먼저 건넨다.",
+"가까운 사람과 사이가 멀어지면 생각보다 오래 마음에 남는다.",
+"누군가 실제로 곤란해하면 내가 할 수 있는 범위에서 도와주는 편이다.",
+"나에게 크게 상처를 준 사람에게는 비슷한 대가가 돌아가도 괜찮다고 느낀다.",
+
+"감정적인 대화가 길어지면 부담스럽고 실용적인 이야기로 돌아가고 싶어진다.",
+"갖고 싶은 것이 생겨도 꼭 필요한지 따져보고 쉽게 지출하지 않는 편이다.",
+"팀에서 누군가 뒤처지면 전체가 나아질 수 있도록 도울 방법을 찾는 편이다.",
+"너무 빡빡하게 정돈된 환경이나 일정은 답답하게 느껴진다.",
+"당장 재미있는 선택과 중요한 목표가 충돌하면 목표 쪽을 고려하는 편이다.",
+"잘 모르는 사람이 많은 자리에서는 내 모습을 드러내는 데 시간이 걸린다.",
+"익숙한 선택지가 있어도 흥미로운 새 선택지가 보이면 한번 시도해보고 싶어진다.",
+"그때그때 상황에 맞춰 살 뿐, 장기적인 방향은 굳이 정하지 않는 편이다.",
+"마음이 끌리는 일이 생기면 충분히 따져보기 전에 먼저 행동할 때가 있다.",
+"사과하고 달라지려는 사람에게는 다시 기회를 줄 수 있는 편이다.",
+
+"새로운 모임에서도 비교적 빨리 자연스럽게 섞이는 편이다.",
+"결과물에서 작은 부족함이 보이면 그냥 넘기기보다 고치고 싶은 편이다.",
+"한번 정이 든 사람과는 관계를 오래 이어가고 싶다.",
+"실수했을 때 변명보다 내가 할 수 있는 후속 조치를 찾는 편이다.",
+"낯선 사람들 사이에서는 평소보다 말과 행동이 조심스러워진다.",
+"누군가 진심으로 다가오면 나도 비교적 따뜻하게 반응하는 편이다.",
+"의견이 충돌할 때 상대가 왜 그렇게 생각하는지 먼저 이해해보려 한다.",
+"성과가 늦게 보여도 해야 할 일이라면 꾸준히 이어갈 수 있다.",
+"대화나 행동에서 '생각보다 몸이 먼저 나갔다'고 느낄 때가 있다.",
+"어떤 순간에는 사람이나 자연과 깊이 연결되어 있다는 느낌을 받는다.",
+
+"삶에는 물질적 성취나 눈에 보이는 사실만으로는 다 설명되지 않는 차원이 있다고 느낀다.",
+"사람의 사정이나 감정보다 사실관계가 더 먼저 눈에 들어오는 편이다.",
+"긴장되는 일이 이어지면 다른 사람보다 빨리 지치는 느낌이 든다.",
+"핵심만 괜찮다면 세부적인 흠은 어느 정도 남아 있어도 괜찮다.",
+"내가 손해를 조금 봐야 한다면 도움을 주는 것을 망설이는 편이다.",
+"해야 할 일이 많아도 비교적 오랫동안 에너지를 유지하는 편이다.",
+"내가 중요하게 생각하는 사람의 인정은 행동의 동기가 되는 편이다.",
+"처음부터 많은 노력이 필요해 보이면 시작할 의욕이 쉽게 떨어진다.",
+"가까운 사람에게도 내 속마음을 굳이 자세히 말할 필요는 없다고 느낀다.",
+"무언가에 몰입하고 있어도 나 자신과 주변 상황을 계속 또렷하게 의식하는 편이다.",
+
+"중요한 결정을 할 때 장기적으로 원하는 삶과 맞는지를 생각한다.",
+"내 삶이 나 개인만이 아니라 더 큰 공동체와 연결되어 있다고 느낀다.",
+"다른 사람과 비교하다 보면 지금의 내가 못마땅하게 느껴지는 경우가 많다.",
+"결과를 예측하기 어려운 상황에서는 선뜻 결정하기가 어렵다.",
+"누군가 평소답지 않게 행동하면 그 사람에게 무슨 일이 있었는지 생각해보는 편이다.",
+"직감이나 영적인 느낌보다는 확인 가능한 사실만을 신뢰하는 편이다.",
+"주변에서 어떻게 평가하든 내가 납득하면 그것으로 충분한 편이다.",
+"좋아하는 일에 깊이 빠지면 시간 가는 줄 모르는 경우가 많다.",
+"인간은 근본적으로 각자 독립된 존재이며 더 큰 연결감을 굳이 느끼지는 않는다.",
+"여유가 생겨도 나중을 위해 남겨두는 편이다.",
+
+"이미 충분히 괜찮다면 굳이 더 높은 성취를 위해 애쓸 필요는 없다고 느낀다.",
+"마음을 나누는 대화가 관계를 가까워지게 한다고 느낀다.",
+"경쟁이나 성취에서 두드러지는 것에는 큰 관심이 없는 편이다.",
+"중요한 결정을 할 때는 순간적인 기분보다 결과를 충분히 생각한 뒤 움직이는 편이다.",
+"오랫동안 알고 지낸 사람이라도 상황이 바뀌면 비교적 쉽게 거리를 둘 수 있다.",
+"중요한 일을 앞두고 잘못될 가능성이 계속 떠오르는 경우가 많다.",
+"다른 사람의 기분을 알아차리지 못해 뒤늦게 듣는 경우가 자주 있다.",
+"도움을 받을 수 없어도 가능한 범위에서 스스로 해결책을 만들어내는 편이다.",
+"앞으로 생길 문제를 미리 걱정하기보다는 일이 생기면 그때 해결하는 편이다.",
+"잘못한 사람이라도 사정을 알고 나면 어느 정도 이해할 여지가 있다고 느낀다.",
+
+"나와 가치관이 많이 다른 사람도 그 사람 나름의 이유가 있다고 생각하려 한다.",
+"규칙을 어겨도 피해 보는 사람이 없다면 큰 문제는 아니라고 느끼는 편이다.",
+"어려운 과제라도 시작하면 초반에 힘을 많이 쏟는 편이다.",
+"문제가 생기면 누가 해결해주길 기다리기보다 내가 할 수 있는 방법을 찾아본다.",
+"감동적인 이야기를 들어도 비교적 담담하게 받아들이는 편이다.",
+"쉬운 길이 보여도 더 나은 결과를 위해 추가로 노력할 수 있다."
+
+];
+
+
+/* =========================================================
+   2. 채점 구조
+   q = 문항 번호
+   r = true면 역채점
+========================================================= */
+
+const scales = {
+
+  NS: {
+    name: "자극추구",
+    subs: {
+      NS1: {
+        name: "새로움·탐색성",
+        items: [[18,true],[33,false],[46,false],[67,false]]
+      },
+      NS2: {
+        name: "충동적 의사결정",
+        items: [[7,true],[69,false],[79,false],[104,true]]
+      },
+      NS3: {
+        name: "소비·방출성",
+        items: [[19,false],[52,false],[62,true],[100,true]]
+      },
+      NS4: {
+        name: "자유분방성·낮은 질서선호",
+        items: [[12,false],[42,true],[55,true],[64,false]]
+      }
+    }
+  },
+
+  HA: {
+    name: "위험회피",
+    subs: {
+      HA1: {
+        name: "예기불안",
+        items: [[4,false],[27,false],[106,false],[109,true]]
+      },
+      HA2: {
+        name: "불확실성 민감성",
+        items: [[16,true],[25,true],[39,false],[94,false]]
+      },
+      HA3: {
+        name: "낯선 관계에서의 위축",
+        items: [[57,true],[66,false],[71,true],[75,false]]
+      },
+      HA4: {
+        name: "피로·스트레스 민감성",
+        items: [[23,true],[32,false],[83,false],[86,true]]
+      }
+    }
+  },
+
+  RD: {
+    name: "사회적 민감성",
+    subs: {
+      RD1: {
+        name: "정서적 감응성",
+        items: [[14,false],[29,false],[82,true],[115,true]]
+      },
+      RD2: {
+        name: "따뜻한 정서교류",
+        items: [[61,true],[76,false],[89,true],[102,false]]
+      },
+      RD3: {
+        name: "애착",
+        items: [[48,true],[58,false],[73,false],[105,true]]
+      },
+      RD4: {
+        name: "인정·지지 의존성",
+        items: [[5,true],[9,false],[87,false],[97,true]]
+      }
+    }
+  },
+
+  P: {
+    name: "인내력",
+    subs: {
+      P1: {
+        name: "노력 투입",
+        items: [[26,false],[88,true],[113,false],[116,false]]
+      },
+      P2: {
+        name: "지속성",
+        items: [[11,true],[43,false],[47,true],[78,false]]
+      },
+      P3: {
+        name: "성취지향성",
+        items: [[8,false],[51,false],[101,true],[103,true]]
+      },
+      P4: {
+        name: "완벽·완성도 추구",
+        items: [[1,true],[20,false],[72,false],[84,true]]
+      }
+    }
+  },
+
+  SD: {
+    name: "자율성",
+    subs: {
+      SD1: {
+        name: "책임수용",
+        items: [[13,true],[37,false],[56,false],[74,false]]
+      },
+      SD2: {
+        name: "목적·방향성",
+        items: [[38,false],[65,false],[68,true],[91,false]]
+      },
+      SD3: {
+        name: "문제해결·자원성",
+        items: [[35,true],[45,false],[108,false],[114,false]]
+      },
+      SD4: {
+        name: "자기수용",
+        items: [[6,true],[40,false],[49,false],[93,true]]
+      },
+      SD5: {
+        name: "가치와 행동의 일치",
+        items: [[2,false],[17,false],[21,true],[30,true]]
+      }
+    }
+  },
+
+  C: {
+    name: "연대감",
+    subs: {
+      C1: {
+        name: "타인 수용",
+        items: [[28,false],[31,true],[41,true],[111,false]]
+      },
+      C2: {
+        name: "공감·관점수용",
+        items: [[10,true],[77,false],[95,false],[107,true]]
+      },
+      C3: {
+        name: "도움·협력",
+        items: [[24,true],[59,false],[63,false],[85,true]]
+      },
+      C4: {
+        name: "관용·용서",
+        items: [[44,true],[60,true],[70,false],[110,false]]
+      },
+      C5: {
+        name: "양심·공정성",
+        items: [[3,false],[22,true],[36,false],[112,true]]
+      }
+    }
+  },
+
+  ST: {
+    name: "자기초월",
+    subs: {
+      ST1: {
+        name: "몰입·자기망각",
+        items: [[15,true],[50,false],[90,true],[98,false]]
+      },
+      ST2: {
+        name: "초개인적 연결감",
+        items: [[54,true],[80,false],[92,false],[99,true]]
+      },
+      ST3: {
+        name: "초월적·영적 수용성",
+        items: [[34,false],[53,true],[81,false],[96,true]]
+      }
+    }
+  }
+
+};
+
+
+/* =========================================================
+   3. 상태 저장
+========================================================= */
+
+const STORAGE_KEY = "personality116_v1";
+
+let state = {
+  name: "",
+  current: 0,
+  answers: Array(questions.length).fill(null),
+  autoNext: true
+};
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) return;
+
+  try {
+    const parsed = JSON.parse(saved);
+
+    state.name = parsed.name || "";
+    state.current = Number.isInteger(parsed.current)
+      ? Math.min(parsed.current, questions.length - 1)
+      : 0;
+
+    if (
+      Array.isArray(parsed.answers) &&
+      parsed.answers.length === questions.length
+    ) {
+      state.answers = parsed.answers;
+    }
+
+    state.autoNext = parsed.autoNext !== false;
+
+  } catch (e) {
+    console.warn("저장된 검사 데이터 복구 실패", e);
+  }
+
+}
+
+
+/* =========================================================
+   4. DOM
+========================================================= */
+
+const startScreen = document.getElementById("startScreen");
+const testScreen = document.getElementById("testScreen");
+const resultScreen = document.getElementById("resultScreen");
+
+const nameInput = document.getElementById("nameInput");
+const startButton = document.getElementById("startButton");
+
+const progressText = document.getElementById("progressText");
+const answeredText = document.getElementById("answeredText");
+const progressBar = document.getElementById("progressBar");
+
+const questionNumber = document.getElementById("questionNumber");
+const questionText = document.getElementById("questionText");
+
+const scoreButtons = document.getElementById("scoreButtons");
+
+const prevButton = document.getElementById("prevButton");
+const nextButton = document.getElementById("nextButton");
+const autoNext = document.getElementById("autoNext");
+
+const resultName = document.getElementById("resultName");
+const majorResults = document.getElementById("majorResults");
+const rawOutput = document.getElementById("rawOutput");
+
+const copySummary = document.getElementById("copySummary");
+const copyFull = document.getElementById("copyFull");
+const restartButton = document.getElementById("restartButton");
+
+
+/* =========================================================
+   5. 시작
+========================================================= */
+
+loadState();
+
+nameInput.value = state.name;
+autoNext.checked = state.autoNext;
+
+startButton.onclick = () => {
+
+  state.name = nameInput.value.trim() || "응답자";
+
+  saveState();
+
+  startScreen.classList.add("hidden");
+  testScreen.classList.remove("hidden");
+
+  renderQuestion();
+};
+
+
+/* =========================================================
+   6. 문항 표시
+========================================================= */
+
+function renderQuestion() {
+
+  const i = state.current;
+
+  questionNumber.textContent =
+    `문항 ${i + 1}`;
+
+  questionText.textContent =
+    questions[i];
+
+  progressText.textContent =
+    `${i + 1} / ${questions.length}`;
+
+  const answered =
+    state.answers.filter(v => v !== null).length;
+
+  answeredText.textContent =
+    `응답 ${answered}/${questions.length}`;
+
+  progressBar.style.width =
+    `${((i + 1) / questions.length) * 100}%`;
+
+  scoreButtons.innerHTML = "";
+
+  for (let value = 1; value <= 5; value++) {
+
+    const btn = document.createElement("button");
+
+    btn.className = "score";
+    btn.textContent = value;
+
+    if (state.answers[i] === value) {
+      btn.classList.add("selected");
+    }
+
+    btn.onclick = () => {
+      answerQuestion(value);
+    };
+
+    scoreButtons.appendChild(btn);
+  }
+
+  prevButton.disabled = i === 0;
+
+  if (i === questions.length - 1) {
+    nextButton.textContent = "결과 보기";
+  } else {
+    nextButton.textContent = "다음";
+  }
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================================================
+   7. 답변
+========================================================= */
+
+function answerQuestion(value) {
+
+  state.answers[state.current] = value;
+
+  saveState();
+  renderQuestion();
+
+  if (
+    state.autoNext &&
+    state.current < questions.length - 1
+  ) {
+
+    setTimeout(() => {
+
+      state.current++;
+      saveState();
+      renderQuestion();
+
+    }, 130);
+  }
+}
+
+
+prevButton.onclick = () => {
+
+  if (state.current <= 0) return;
+
+  state.current--;
+
+  saveState();
+  renderQuestion();
+};
+
+
+nextButton.onclick = () => {
+
+  if (state.answers[state.current] === null) {
+
+    alert("현재 문항에 먼저 답해주세요.");
+    return;
+  }
+
+  if (state.current === questions.length - 1) {
+
+    finishTest();
+    return;
+  }
+
+  state.current++;
+
+  saveState();
+  renderQuestion();
+};
+
+
+autoNext.onchange = () => {
+
+  state.autoNext = autoNext.checked;
+  saveState();
+};
+
+
+/* 키보드 1~5 응답 */
+
+document.addEventListener("keydown", e => {
+
+  if (testScreen.classList.contains("hidden")) return;
+
+  const n = Number(e.key);
+
+  if (n >= 1 && n <= 5) {
+    answerQuestion(n);
+  }
+
+  if (e.key === "ArrowLeft") {
+    prevButton.click();
+  }
+
+  if (e.key === "ArrowRight") {
+    nextButton.click();
+  }
+
+});
+
+
+/* =========================================================
+   8. 점수 계산
+========================================================= */
+
+function scoredAnswer(questionNumber, reverse) {
+
+  const raw = state.answers[questionNumber - 1];
+
+  if (raw === null) return null;
+
+  return reverse ? 6 - raw : raw;
+}
+
+
+function average(values) {
+
+  if (!values.length) return 0;
+
+  return values.reduce((a,b) => a + b, 0)
+    / values.length;
+}
+
+
+function calculateResults() {
+
+  const results = {};
+
+  for (const [majorCode, major] of Object.entries(scales)) {
+
+    const subResults = {};
+
+    for (const [subCode, sub] of Object.entries(major.subs)) {
+
+      const values =
+        sub.items.map(([q, reverse]) =>
+          scoredAnswer(q, reverse)
+        );
+
+      subResults[subCode] = {
+        name: sub.name,
+        score: average(values),
+        values
+      };
+    }
+
+    const majorScore =
+      average(
+        Object.values(subResults)
+          .map(s => s.score)
+      );
+
+    results[majorCode] = {
+      name: major.name,
+      score: majorScore,
+      subs: subResults
+    };
+  }
+
+  return results;
+}
+
+
+/* =========================================================
+   9. 검사 완료
+========================================================= */
+
+function finishTest() {
+
+  const missing = [];
+
+  state.answers.forEach((answer, i) => {
+    if (answer === null) {
+      missing.push(i + 1);
+    }
+  });
+
+  if (missing.length) {
+
+    alert(
+      `응답하지 않은 문항이 ${missing.length}개 있습니다.\n` +
+      `첫 미응답 문항: ${missing[0]}번`
+    );
+
+    state.current = missing[0] - 1;
+
+    saveState();
+    renderQuestion();
+
+    return;
+  }
+
+  showResults();
+}
+
+
+/* =========================================================
+   10. 결과 표시
+========================================================= */
+
+function showResults() {
+
+  const results = calculateResults();
+
+  testScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+
+  resultName.textContent =
+    `${state.name}님의 결과`;
+
+  majorResults.innerHTML = "";
+
+  for (const [code, major] of Object.entries(results)) {
+
+    const box = document.createElement("div");
+
+    box.className = "major-score";
+
+    let subHTML = "";
+
+    for (const [subCode, sub] of Object.entries(major.subs)) {
+
+      subHTML += `
+        <div class="subscale">
+          <span>${subCode} · ${sub.name}</span>
+          <strong>${sub.score.toFixed(2)}</strong>
+        </div>
+      `;
+    }
+
+    box.innerHTML = `
+      <div class="major-head">
+        <div class="major-title">
+          ${code} · ${major.name}
+        </div>
+
+        <div class="major-number">
+          ${major.score.toFixed(2)}
+        </div>
+      </div>
+
+      ${subHTML}
+    `;
+
+    majorResults.appendChild(box);
+  }
+
+  rawOutput.value =
+    makeFullOutput(results);
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* =========================================================
+   11. 분석용 출력
+========================================================= */
+
+function makeSummary(results) {
+
+  let text = "";
+
+  text +=
+`[116문항 성격 프로파일 결과]
+
+이름: ${state.name}
+
+`;
+
+  for (const [code, major] of Object.entries(results)) {
+
+    text +=
+`${code} ${major.name}: ${major.score.toFixed(2)}
+`;
+
+    for (const [subCode, sub] of Object.entries(major.subs)) {
+
+      text +=
+`- ${subCode} ${sub.name}: ${sub.score.toFixed(2)}
+`;
+    }
+
+    text += "\n";
+  }
+
+  return text;
+}
+
+
+function makeFullOutput(results) {
+
+  let text = makeSummary(results);
+
+  text +=
+`========================
+원응답 1~116
+========================
+
+`;
+
+  state.answers.forEach((answer, i) => {
+
+    text +=
+`${i + 1}: ${answer}
+`;
+  });
+
+  text +=
+`
+========================
+JSON
+========================
+`;
+
+  const exportData = {
+    version: "personality116_v1",
+    name: state.name,
+    responses: state.answers,
+    scores: {}
+  };
+
+  for (const [code, major] of Object.entries(results)) {
+
+    exportData.scores[code] = {
+      score: Number(major.score.toFixed(3)),
+      subs: {}
+    };
+
+    for (const [subCode, sub] of Object.entries(major.subs)) {
+
+      exportData.scores[code].subs[subCode] =
+        Number(sub.score.toFixed(3));
+    }
+  }
+
+  text +=
+    JSON.stringify(exportData, null, 2);
+
+  return text;
+}
+
+
+/* =========================================================
+   12. 복사
+========================================================= */
+
+copySummary.onclick = async () => {
+
+  const text =
+    makeSummary(calculateResults());
+
+  await copyText(text);
+
+  alert("검사 결과를 복사했습니다.");
+};
+
+
+copyFull.onclick = async () => {
+
+  await copyText(rawOutput.value);
+
+  alert("점수와 116개 원응답을 모두 복사했습니다.");
+};
+
+
+async function copyText(text) {
+
+  try {
+
+    await navigator.clipboard.writeText(text);
+
+  } catch {
+
+    const temp = document.createElement("textarea");
+
+    temp.value = text;
+
+    document.body.appendChild(temp);
+
+    temp.select();
+
+    document.execCommand("copy");
+
+    temp.remove();
+  }
+}
+
+
+/* =========================================================
+   13. 초기화
+========================================================= */
+
+restartButton.onclick = () => {
+
+  const ok = confirm(
+    "현재 검사 결과와 저장된 응답을 모두 삭제하고 처음부터 다시 할까요?"
+  );
+
+  if (!ok) return;
+
+  localStorage.removeItem(STORAGE_KEY);
+
+  location.reload();
+};
+
+
+/* 저장된 검사에 이미 이름과 응답이 있다면 안내 */
+
+if (
+  state.answers.some(v => v !== null)
+) {
+
+  const count =
+    state.answers.filter(v => v !== null).length;
+
+  startButton.textContent =
+    `이어하기 (${count}/${questions.length})`;
+}
+
+</script>
+
+</body>
+</html>
