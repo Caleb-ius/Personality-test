@@ -265,16 +265,6 @@ button:disabled {
   min-width: 135px;
 }
 
-textarea {
-  width: 100%;
-  min-height: 230px;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 14px;
-  resize: vertical;
-  font-size: 12px;
-  line-height: 1.5;
-}
 
 .submit-status {
   border-radius: 12px;
@@ -366,12 +356,13 @@ textarea {
     실명 대신 닉네임을 사용해도 됩니다.
   </div>
 
-  <label>
+  <label for="nameInput">
     이름 또는 닉네임
   </label>
 
   <input
     id="nameInput"
+    maxlength="200"
     class="name-input"
     placeholder="예: 민지"
   >
@@ -485,9 +476,11 @@ textarea {
 
   <div
     id="submitStatus"
+    role="status"
+    aria-live="polite"
     class="submit-status status-loading"
   >
-    검사 결과를 저장하고 있습니다.
+    검사가 완료되었습니다. 아래 버튼을 눌러 결과를 전송해주세요.
   </div>
 
   <div class="notice">
@@ -500,52 +493,15 @@ textarea {
 
   <div class="result-actions">
 
-    <button
-      id="retrySubmit"
-      class="secondary hidden"
-    >
-      다시 제출
-    </button>
+  <button
+    id="submitResultButton"
+    type="button"
+    class="primary"
+  >
+    검사 결과 전송하기
+  </button>
 
-    <button
-      id="copySummary"
-      class="primary"
-    >
-      결과 복사
-    </button>
-
-    <button
-      id="copyFull"
-      class="secondary"
-    >
-      전체 응답 복사
-    </button>
-
-    <button
-      id="restartButton"
-      class="danger"
-    >
-      새 검사 시작
-    </button>
-
-  </div>
-
-  <details>
-    <summary>
-      분석용 원자료 보기
-    </summary>
-
-    <p class="muted">
-      아래 내용을 ChatGPT에 붙여 넣으면
-      세부 프로파일 분석에 사용할 수 있습니다.
-    </p>
-
-    <textarea
-      id="rawOutput"
-      readonly
-    ></textarea>
-
-  </details>
+</div>
 
 </section>
 
@@ -876,69 +832,97 @@ ST: {
    상태
 ========================================================= */
 
+// 기존 저장 키를 유지하되, 과거 submitted=true는 저장 확인으로 인정하지 않습니다.
 let state = {
-  name: "",
-  current: 0,
-  answers: Array(questions.length).fill(null),
-  autoNext: true,
-  submissionId: null,
-  submitted: false
+  schema: 3, name: "", current: 0,
+  answers: Array(questions.length).fill(null), autoNext: true,
+  submissionId: null, completedAt: null,
+  submitted: false, submitStatus: "idle", receipt: null, receiptBinding: null
 };
+let storageAvailable = true;
+let submitting = false;
+let advanceTimer = null;
 
-
-function saveState() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(state)
-  );
+function showStorageNotice() {
+  let notice = document.getElementById("storageNotice");
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "storageNotice";
+    notice.className = "notice";
+    notice.setAttribute("role", "status");
+    document.querySelector(".app").prepend(notice);
+  }
+  notice.textContent = "이 브라우저에서는 응답을 기기에 저장할 수 없습니다. 새로고침하거나 창을 닫으면 응답을 잃을 수 있습니다.";
 }
 
-
-function loadState() {
-
-  const saved =
-    localStorage.getItem(STORAGE_KEY);
-
-  if (!saved) return;
-
+function saveState() {
   try {
-
-    const parsed =
-      JSON.parse(saved);
-
-    state.name =
-      parsed.name || "";
-
-    state.current =
-      Number.isInteger(parsed.current)
-        ? Math.min(
-            parsed.current,
-            questions.length - 1
-          )
-        : 0;
-
-    if (
-      Array.isArray(parsed.answers) &&
-      parsed.answers.length === questions.length
-    ) {
-      state.answers =
-        parsed.answers;
-    }
-
-    state.autoNext =
-      parsed.autoNext !== false;
-
-    state.submissionId =
-      parsed.submissionId || null;
-
-    state.submitted =
-      parsed.submitted === true;
-
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    storageAvailable = true;
+    document.getElementById("storageNotice")?.remove();
   } catch (error) {
-    console.warn(error);
+    storageAvailable = false;
+    showStorageNotice();
   }
 }
 
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    const parsed = JSON.parse(saved);
+    if (!parsed || typeof parsed !== "object") return;
+    state.name = typeof parsed.name === "string" ? parsed.name : "";
+    state.current = Number.isInteger(parsed.current)
+      ? Math.max(0, Math.min(parsed.current, questions.length - 1)) : 0;
+    if (Array.isArray(parsed.answers) && parsed.answers.length === questions.length) {
+      state.answers = Array.from(parsed.answers, value =>
+        Number.isInteger(value) && value >= 1 && value <= 5 ? value : null);
+    }
+    state.autoNext = parsed.autoNext !== false;
+    state.submissionId = typeof parsed.submissionId === "string" &&
+      /^[A-Za-z0-9-]{8,100}$/.test(parsed.submissionId) ? parsed.submissionId : null;
+    state.completedAt = typeof parsed.completedAt === "string" &&
+      Number.isFinite(Date.parse(parsed.completedAt)) ? parsed.completedAt : null;
+    state.receipt = parsed.schema === 3 ? parsed.receipt : null;
+    state.receiptBinding = parsed.schema === 3 ? parsed.receiptBinding : null;
+    state.submitted = false;
+    state.submitStatus = parsed.submitted ||
+      ["confirmed", "unknown", "sending"].includes(parsed.submitStatus)
+      ? "unknown" : "idle";
+    // loadState 이후 DOM이 준비된 초기화에서, 현재 응답과 확인 기록의 일치를 검사합니다.
+  } catch (error) {
+    // 저장소 접근 차단과 손상된 JSON 모두 검사 진행 자체를 막지 않습니다.
+    try { localStorage.getItem(STORAGE_KEY); }
+    catch (_) { storageAvailable = false; showStorageNotice(); }
+  }
+}
+
+function allAnswered() {
+  return state.answers.length === questions.length && state.answers.every(
+    value => Number.isInteger(value) && value >= 1 && value <= 5);
+}
+
+function ensureSubmissionId() {
+  if (!state.submissionId) {
+    state.submissionId = globalThis.crypto?.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+  }
+}
+
+function dataBinding() {
+  return JSON.stringify([TEST_VERSION, state.submissionId, state.name,
+    state.completedAt, state.answers]);
+}
+
+function hasConfirmedReceipt() {
+  const r = state.receipt;
+  return allAnswered() && !!state.completedAt && !!r && r.ok === true &&
+    r.stored === true && r.submissionId === state.submissionId &&
+    typeof r.savedAt === "string" && Number.isFinite(Date.parse(r.savedAt)) &&
+    state.receiptBinding === dataBinding();
+}
 
 /* =========================================================
    DOM
@@ -998,20 +982,8 @@ const majorResults =
 const submitStatus =
   document.getElementById("submitStatus");
 
-const retrySubmit =
-  document.getElementById("retrySubmit");
-
-const rawOutput =
-  document.getElementById("rawOutput");
-
-const copySummary =
-  document.getElementById("copySummary");
-
-const copyFull =
-  document.getElementById("copyFull");
-
-const restartButton =
-  document.getElementById("restartButton");
+const submitResultButton =
+  document.getElementById("submitResultButton");
 
 
 /* =========================================================
@@ -1019,6 +991,10 @@ const restartButton =
 ========================================================= */
 
 loadState();
+state.submitted = hasConfirmedReceipt();
+if (state.submitted) state.submitStatus = "confirmed";
+// 전송한 응답의 이름을 바꿔 동일 ID에 다른 데이터를 보내지 않도록 합니다.
+nameInput.disabled = allAnswered() && state.submitStatus !== "idle";
 
 nameInput.value =
   state.name;
@@ -1063,27 +1039,10 @@ startButton.onclick = () => {
     return;
   }
 
-  state.name =
-    nameInput.value.trim() ||
-    "익명";
-
-  if (!state.submissionId) {
-
-    if (
-      typeof crypto !== "undefined" &&
-      crypto.randomUUID
-    ) {
-      state.submissionId =
-        crypto.randomUUID();
-    } else {
-      state.submissionId =
-        Date.now().toString(36) +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2);
-    }
+  if (!nameInput.disabled) {
+    state.name = nameInput.value.trim() || "익명";
   }
+  ensureSubmissionId();
 
   saveState();
 
@@ -1179,7 +1138,7 @@ function renderQuestion() {
 
   nextButton.textContent =
     i === questions.length - 1
-      ? "검사 제출"
+      ? "결과 보기"
       : "다음";
 
   window.scrollTo({
@@ -1193,77 +1152,60 @@ function renderQuestion() {
    답변
 ========================================================= */
 
+function cancelAdvance() {
+  clearTimeout(advanceTimer);
+  advanceTimer = null;
+}
+
 function answerQuestion(value) {
-
-  state.answers[state.current] =
-    value;
-
+  if (!Number.isInteger(value) || value < 1 || value > 5 ||
+      testScreen.classList.contains("hidden")) return;
+  cancelAdvance();
+  const answeredIndex = state.current;
+  state.answers[answeredIndex] = value;
+  state.submitted = false;
+  state.receipt = null;
+  state.receiptBinding = null;
+  state.completedAt = null;
   saveState();
   renderQuestion();
-
-  if (
-    state.autoNext &&
-    state.current <
-      questions.length - 1
-  ) {
-
-    setTimeout(() => {
-
+  if (state.autoNext && state.current < questions.length - 1) {
+    advanceTimer = setTimeout(() => {
+      advanceTimer = null;
+      if (state.current !== answeredIndex || testScreen.classList.contains("hidden")) return;
       state.current++;
-
       saveState();
-
       renderQuestion();
-
     }, 130);
   }
 }
 
-
 prevButton.onclick = () => {
-
-  if (state.current <= 0) {
-    return;
-  }
-
+  cancelAdvance();
+  if (state.current <= 0) return;
   state.current--;
-
   saveState();
-
   renderQuestion();
 };
 
-
 nextButton.onclick = () => {
-
-  if (
-    state.answers[state.current] ===
-    null
-  ) {
-    alert(
-      "현재 문항에 먼저 답해주세요."
-    );
+  cancelAdvance();
+  if (state.answers[state.current] === null) {
+    alert("현재 문항에 먼저 답해주세요.");
     return;
   }
-
-  if (
-    state.current ===
-    questions.length - 1
-  ) {
+  if (state.current === questions.length - 1) {
     finishTest();
     return;
   }
-
   state.current++;
-
   saveState();
-
   renderQuestion();
 };
 
-
 autoNext.onchange = () => {
 
+  cancelAdvance();
   state.autoNext =
     autoNext.checked;
 
@@ -1462,8 +1404,7 @@ function buildExportData(
       state.name,
 
     completedAt:
-      new Date()
-        .toISOString(),
+      state.completedAt,
 
     responses:
       [...state.answers],
@@ -1508,110 +1449,74 @@ function buildExportData(
    Google Sheet 제출
 ========================================================= */
 
-async function submitResults(
-  results
-) {
-
-  if (state.submitted) {
-    return true;
-  }
-
-  const data =
-    buildExportData(results);
-
-  const body =
-    new URLSearchParams();
-
-  body.append(
-    "payload",
-    JSON.stringify(data)
-  );
-
-  try {
-
-    await fetch(
-      SUBMIT_ENDPOINT,
-      {
-        method: "POST",
-        mode: "no-cors",
-        body
-      }
-    );
-
-    state.submitted =
-      true;
-
-    saveState();
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "제출 실패",
-      error
-    );
-
-    return false;
-  }
+function appsScriptAvailable() {
+  return typeof google !== "undefined" && !!google.script?.run;
 }
 
-
-/* =========================================================
-   결과 표시
-========================================================= */
-
-async function showResults() {
-
-  const results =
-    calculateResults();
-
-  startScreen.classList.add(
-    "hidden"
-  );
-
-  testScreen.classList.add(
-    "hidden"
-  );
-
-  resultScreen.classList.remove(
-    "hidden"
-  );
-
-  resultName.textContent =
-    `${state.name}님의 검사 결과`;
-
-  renderResults(results);
-
-  rawOutput.value =
-    makeFullOutput(results);
-
-  if (state.submitted) {
-
-    setSubmitSuccess();
-
-  } else {
-
-    setSubmitLoading();
-
-    const success =
-      await submitResults(
-        results
-      );
-
-    if (success) {
-      setSubmitSuccess();
-    } else {
-      setSubmitError();
-    }
-  }
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+function saveViaAppsScript(data) {
+  return new Promise((resolve, reject) => {
+    // 시간 초과도 "미저장"을 뜻하지 않습니다. 같은 ID로 재시도합니다.
+    const timer = setTimeout(() => reject(new Error("저장 확인 시간 초과")), 30000);
+    google.script.run
+      .withSuccessHandler(receipt => { clearTimeout(timer); resolve(receipt); })
+      .withFailureHandler(error => { clearTimeout(timer); reject(error); })
+      .saveResult(data);
   });
 }
 
+async function submitResults(results) {
+  const data = buildExportData(results);
+  if (appsScriptAvailable()) {
+    const receipt = await saveViaAppsScript(data);
+    if (!receipt || receipt.ok !== true || receipt.stored !== true ||
+        receipt.submissionId !== data.submissionId ||
+        typeof receipt.savedAt !== "string" || !Number.isFinite(Date.parse(receipt.savedAt))) {
+      throw new Error("서버 저장 확인 응답이 올바르지 않습니다.");
+    }
+    state.receipt = receipt;
+    state.receiptBinding = dataBinding();
+    state.submitted = true;
+    state.submitStatus = "confirmed";
+    saveState();
+    return;
+  }
+
+  // 기존 GitHub Pages + 기존 Apps Script 호환 경로.
+  // opaque 응답은 성공 여부/본문을 읽을 수 없으므로 저장 완료로 표시하지 않습니다.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    await fetch(SUBMIT_ENDPOINT, {
+      method: "POST", mode: "no-cors",
+      body: new URLSearchParams({ payload: JSON.stringify(data) }),
+      signal: controller.signal
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+  state.submitted = false;
+  state.submitStatus = "unknown";
+  saveState();
+}
+
+function showResults() {
+  cancelAdvance();
+  if (!allAnswered()) {
+    finishTest();
+    return;
+  }
+  ensureSubmissionId();
+  if (!state.completedAt) state.completedAt = new Date().toISOString();
+  state.submitted = hasConfirmedReceipt();
+  saveState();
+  startScreen.classList.add("hidden");
+  testScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+  resultName.textContent = `${state.name}님의 검사 결과`;
+  renderResults(calculateResults());
+  renderSubmitStatus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 function renderResults(results) {
 
@@ -1681,245 +1586,50 @@ function renderResults(results) {
    제출 상태
 ========================================================= */
 
-function setSubmitLoading() {
-
-  submitStatus.className =
-    "submit-status status-loading";
-
-  submitStatus.textContent =
-    "검사 결과를 저장하고 있습니다.";
-
-  retrySubmit.classList.add(
-    "hidden"
-  );
-}
-
-
-function setSubmitSuccess() {
-
-  submitStatus.className =
-    "submit-status status-success";
-
-  submitStatus.innerHTML =
-    "<strong>제출 완료</strong><br>" +
-    "검사 결과가 정상적으로 제출되었습니다.";
-
-  retrySubmit.classList.add(
-    "hidden"
-  );
-}
-
-
-function setSubmitError() {
-
-  submitStatus.className =
-    "submit-status status-error";
-
-  submitStatus.innerHTML =
-    "<strong>자동 제출을 확인하지 못했습니다.</strong><br>" +
-    "인터넷 연결을 확인한 뒤 다시 제출해주세요. " +
-    "응답은 이 기기에 그대로 저장되어 있습니다.";
-
-  retrySubmit.classList.remove(
-    "hidden"
-  );
-}
-
-
-retrySubmit.onclick =
-  async () => {
-
-    state.submitted =
-      false;
-
-    saveState();
-
-    const results =
-      calculateResults();
-
-    setSubmitLoading();
-
-    const success =
-      await submitResults(
-        results
-      );
-
-    if (success) {
-      setSubmitSuccess();
-    } else {
-      setSubmitError();
-    }
-  };
-
-
-/* =========================================================
-   결과 텍스트
-========================================================= */
-
-function makeSummary(results) {
-
-  let text =
-`[116문항 성격 프로파일 결과]
-
-이름: ${state.name}
-검사버전: ${TEST_VERSION}
-
-`;
-
-  for (
-    const [code, major]
-    of Object.entries(results)
-  ) {
-
-    text +=
-`${code} ${major.name}: ${major.score.toFixed(2)}
-`;
-
-    for (
-      const [subCode, sub]
-      of Object.entries(
-        major.subs
-      )
-    ) {
-
-      text +=
-`- ${subCode} ${sub.name}: ${sub.score.toFixed(2)}
-`;
-    }
-
-    text += "\n";
+function renderSubmitStatus() {
+  const confirmed = hasConfirmedReceipt();
+  submitResultButton.disabled = submitting || confirmed;
+  submitResultButton.textContent = submitting ? "전송 중..." :
+    confirmed ? "검사 결과 전송 완료" : "검사 결과 전송하기";
+  if (submitting) {
+    submitStatus.className = "submit-status status-loading";
+    submitStatus.textContent = "검사 결과를 전송하고 저장 여부를 확인하고 있습니다.";
+  } else if (confirmed) {
+    submitStatus.className = "submit-status status-success";
+    submitStatus.textContent = `서버에서 검사 결과 저장을 확인했습니다. 제출 번호: ${state.submissionId}`;
+  } else if (state.submitStatus === "unknown") {
+    submitStatus.className = "submit-status status-error";
+    submitStatus.textContent = "서버 저장 여부를 확인하지 못했습니다. 이미 저장되었을 수도 있으므로 관리자에게 제출 번호로 확인해주세요. 재전송하면 기존 서버에서는 중복 저장될 수 있습니다. " +
+      `제출 번호: ${state.submissionId || "없음"}. ` +
+      (storageAvailable ? "응답은 이 브라우저에 저장되어 있습니다." : "응답은 현재 열린 화면에만 남아 있습니다. 창을 닫지 마세요.");
+  } else {
+    submitStatus.className = "submit-status status-loading";
+    submitStatus.textContent = "검사가 완료되었습니다. 아래 버튼을 눌러 결과를 전송해주세요.";
   }
-
-  return text;
 }
 
-
-function makeFullOutput(
-  results
-) {
-
-  let text =
-    makeSummary(results);
-
-  text +=
-`========================
-원응답 1~116
-========================
-
-`;
-
-  state.answers.forEach(
-    (answer, index) => {
-
-      text +=
-`${index + 1}: ${answer}
-`;
-    }
-  );
-
-  text +=
-`
-========================
-JSON
-========================
-`;
-
-  text +=
-    JSON.stringify(
-      buildExportData(results),
-      null,
-      2
-    );
-
-  return text;
-}
-
-
-/* =========================================================
-   복사
-========================================================= */
-
-copySummary.onclick =
-  async () => {
-
-    const text =
-      makeSummary(
-        calculateResults()
-      );
-
-    await copyText(text);
-
-    alert(
-      "검사 결과를 복사했습니다."
-    );
-  };
-
-
-copyFull.onclick =
-  async () => {
-
-    await copyText(
-      rawOutput.value
-    );
-
-    alert(
-      "점수와 116개 원응답을 모두 복사했습니다."
-    );
-  };
-
-
-async function copyText(text) {
-
+submitResultButton.onclick = async () => {
+  if (submitting || hasConfirmedReceipt()) return;
+  if (!allAnswered()) { alert("116문항에 모두 답한 뒤 전송해주세요."); return; }
+  if (state.submitStatus === "unknown" && !confirm(
+    "이전에 전송한 응답이 이미 저장되었을 수 있습니다. 기존 서버에서는 중복 저장될 수 있습니다. 같은 제출 번호로 다시 전송할까요?")) return;
+  submitting = true;
+  // 전송 중 새로고침/연결 중단도 재접속 시 '확인 불가'로 남깁니다.
+  state.submitStatus = "unknown";
+  state.submitted = false;
+  nameInput.disabled = true;
+  saveState();
+  renderSubmitStatus();
   try {
-
-    await navigator
-      .clipboard
-      .writeText(text);
-
-  } catch {
-
-    const temp =
-      document.createElement(
-        "textarea"
-      );
-
-    temp.value =
-      text;
-
-    document.body
-      .appendChild(temp);
-
-    temp.select();
-
-    document.execCommand(
-      "copy"
-    );
-
-    temp.remove();
+    await submitResults(calculateResults());
+  } catch (error) {
+    state.submitted = false;
+    state.submitStatus = "unknown";
+    saveState();
+  } finally {
+    submitting = false;
+    renderSubmitStatus();
   }
-}
-
-
-/* =========================================================
-   새 검사
-========================================================= */
-
-restartButton.onclick = () => {
-
-  const confirmed =
-    confirm(
-      "현재 기기에 저장된 검사 응답을 지우고 새 검사를 시작할까요?"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  localStorage.removeItem(
-    STORAGE_KEY
-  );
-
-  location.reload();
 };
 
 </script>
