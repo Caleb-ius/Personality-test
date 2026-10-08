@@ -223,36 +223,6 @@ button:disabled {
   display: none !important;
 }
 
-.major-score {
-  border-bottom: 1px solid #eee;
-  padding: 18px 0;
-}
-
-.major-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.major-title {
-  font-size: 19px;
-  font-weight: 750;
-}
-
-.major-number {
-  font-size: 25px;
-  font-weight: 800;
-}
-
-.subscale {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 14px;
-  color: #555;
-}
-
 .result-actions {
   display: flex;
   flex-wrap: wrap;
@@ -347,13 +317,12 @@ button:disabled {
   </div>
 
   <div class="notice">
-    본 검사는 성격 탐색을 목적으로
-    새롭게 구성한 비표준화 자기보고 검사입니다.
-    의료·심리 진단을 목적으로 하지 않습니다.<br><br>
-
-    제출한 응답과 검사 점수는
-    검사 결과 분석을 위해 저장됩니다.
-    실명 대신 닉네임을 사용해도 됩니다.
+    본 검사는 성격 탐색을 위한 비표준화 자기보고 검사로,
+    의료·심리 진단을 대신하지 않습니다.<br><br>
+    입력한 이름(또는 닉네임), 응답, 산출 점수는 결과 분석 및
+    개별 안내를 위해 담당자가 열람·보관합니다.
+    이용자 화면에는 점수를 표시하지 않으며, 분석 후 개별적으로 전달합니다.
+    삭제 문의는 검사를 요청한 담당자에게 해주세요.
   </div>
 
   <label for="nameInput">
@@ -373,8 +342,8 @@ button:disabled {
       id="consentCheck"
     >
     <span>
-      검사 결과 분석을 위해
-      응답과 점수가 저장되는 것에 동의합니다.
+      검사 결과 분석 및 개별 전달을 위해
+      이름(또는 닉네임), 응답과 점수를 저장하는 것에 동의합니다.
     </span>
   </label>
 
@@ -462,47 +431,18 @@ button:disabled {
 </section>
 
 
-<section
-  id="resultScreen"
-  class="card hidden"
->
-
-  <h1>검사 완료</h1>
-
-  <p
-    id="resultName"
-    class="muted"
-  ></p>
-
-  <div
-    id="submitStatus"
-    role="status"
-    aria-live="polite"
-    class="submit-status status-loading"
-  >
-    검사가 완료되었습니다. 아래 버튼을 눌러 결과를 전송해주세요.
+<section id="resultScreen" class="card hidden">
+  <h1 id="completionTitle">검사 응답 완료</h1>
+  <p id="resultName" class="muted"></p>
+  <div id="submitStatus" role="status" aria-live="polite"
+       class="submit-status status-loading">
+    모든 문항에 응답했습니다. 아래 버튼을 눌러 제출해주세요.
   </div>
-
-  <div class="notice">
-    점수는 1.00~5.00 범위입니다.
-    한국 성인 규준의 백분위 점수가 아니라
-    응답자의 개인 성향 프로파일을 확인하기 위한 점수입니다.
-  </div>
-
-  <div id="majorResults"></div>
-
   <div class="result-actions">
-
-  <button
-    id="submitResultButton"
-    type="button"
-    class="primary"
-  >
-    검사 결과 전송하기
-  </button>
-
-</div>
-
+    <button id="submitResultButton" type="button" class="primary">
+      검사 결과 제출하기
+    </button>
+  </div>
 </section>
 
 </div>
@@ -920,7 +860,6 @@ function hasConfirmedReceipt() {
   const r = state.receipt;
   return allAnswered() && !!state.completedAt && !!r && r.ok === true &&
     r.stored === true && r.submissionId === state.submissionId &&
-    typeof r.savedAt === "string" && Number.isFinite(Date.parse(r.savedAt)) &&
     state.receiptBinding === dataBinding();
 }
 
@@ -976,9 +915,6 @@ const autoNext =
 const resultName =
   document.getElementById("resultName");
 
-const majorResults =
-  document.getElementById("majorResults");
-
 const submitStatus =
   document.getElementById("submitStatus");
 
@@ -1021,7 +957,7 @@ if (answeredCount > 0) {
     questions.length
   ) {
     startButton.textContent =
-      "결과 다시 보기";
+      "제출 상태 확인";
   } else {
     startButton.textContent =
       `이어하기 (${answeredCount}/${questions.length})`;
@@ -1138,7 +1074,7 @@ function renderQuestion() {
 
   nextButton.textContent =
     i === questions.length - 1
-      ? "결과 보기"
+      ? "검사 마치기"
       : "다음";
 
   window.scrollTo({
@@ -1162,6 +1098,12 @@ function answerQuestion(value) {
       testScreen.classList.contains("hidden")) return;
   cancelAdvance();
   const answeredIndex = state.current;
+  if (state.answers[answeredIndex] !== value &&
+      (state.submitStatus !== "idle" || state.receipt)) {
+    state.submissionId = null;
+    state.submitStatus = "idle";
+    ensureSubmissionId();
+  }
   state.answers[answeredIndex] = value;
   state.submitted = false;
   state.receipt = null;
@@ -1464,25 +1406,92 @@ function saveViaAppsScript(data) {
   });
 }
 
+// GitHub Pages에서 Apps Script의 JSONP 상태 조회를 사용합니다.
+// 서버는 제출 번호와 저장 여부만 반환하며 이름/응답/점수는 반환하지 않습니다.
+function fetchStorageStatus(submissionId, timeoutMs = 12000) {
+  return new Promise((resolve, reject) => {
+    const callbackName = "__personality116_" + Date.now() + "_" +
+      Math.random().toString(36).slice(2);
+    const script = document.createElement("script");
+    let settled = false;
+    let timer;
+
+    function finish(error, result) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      script.remove();
+      delete window[callbackName];
+      if (error) reject(error);
+      else resolve(result);
+    }
+
+    window[callbackName] = result => {
+      if (!result || result.ok !== true ||
+          result.submissionId !== submissionId ||
+          typeof result.stored !== "boolean") {
+        finish(new Error("잘못된 저장 확인 응답"));
+      } else {
+        finish(null, result);
+      }
+    };
+    script.onerror = () => finish(new Error("저장 확인 서버에 연결할 수 없습니다."));
+    timer = setTimeout(() => finish(new Error("저장 확인 시간 초과")), timeoutMs);
+    const query = new URLSearchParams({
+      action: "status", submissionId,
+      callback: callbackName, _: String(Date.now())
+    });
+    script.src = SUBMIT_ENDPOINT + "?" + query.toString();
+    document.head.appendChild(script);
+  });
+}
+
+function confirmStored(result) {
+  if (!result || result.ok !== true || result.stored !== true ||
+      result.submissionId !== state.submissionId) return false;
+  state.receipt = { ok: true, stored: true, submissionId: state.submissionId };
+  if (result.savedAt) state.receipt.savedAt = result.savedAt;
+  state.receiptBinding = dataBinding();
+  state.submitted = true;
+  state.submitStatus = "confirmed";
+  saveState();
+  return true;
+}
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function checkStoredWithRetries(submissionId, retries = 1) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    if (attempt) await wait([700, 1200, 2200, 3500][Math.min(attempt - 1, 3)]);
+    try {
+      const result = await fetchStorageStatus(submissionId);
+      if (result.stored) return result;
+    } catch (error) {
+      console.warn("저장 상태 조회 실패:", error);
+    }
+  }
+  return null;
+}
+
 async function submitResults(results) {
   const data = buildExportData(results);
-  if (appsScriptAvailable()) {
-    const receipt = await saveViaAppsScript(data);
-    if (!receipt || receipt.ok !== true || receipt.stored !== true ||
-        receipt.submissionId !== data.submissionId ||
-        typeof receipt.savedAt !== "string" || !Number.isFinite(Date.parse(receipt.savedAt))) {
-      throw new Error("서버 저장 확인 응답이 올바르지 않습니다.");
-    }
-    state.receipt = receipt;
-    state.receiptBinding = dataBinding();
-    state.submitted = true;
-    state.submitStatus = "confirmed";
-    saveState();
+  // 이미 정상 저장된 동일 제출 번호는 재전송하지 않습니다.
+  const existing = await checkStoredWithRetries(data.submissionId);
+  if (existing) {
+    confirmStored(existing);
     return;
   }
 
-  // 기존 GitHub Pages + 기존 Apps Script 호환 경로.
-  // opaque 응답은 성공 여부/본문을 읽을 수 없으므로 저장 완료로 표시하지 않습니다.
+  if (appsScriptAvailable()) {
+    const receipt = await saveViaAppsScript(data);
+    if (!confirmStored(receipt)) throw new Error("서버 저장 확인 응답 오류");
+    return;
+  }
+
+  // POST의 no-cors 응답 자체는 저장 성공 증명이 아닙니다.
+  // 전송이 네트워크 오류로 끝나더라도 저장됐을 수 있으니 다시 조회합니다.
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
   try {
@@ -1491,12 +1500,28 @@ async function submitResults(results) {
       body: new URLSearchParams({ payload: JSON.stringify(data) }),
       signal: controller.signal
     });
+  } catch (error) {
+    console.warn("POST 결과 확인 불가; 저장 상태를 별도로 조회합니다.", error);
   } finally {
     clearTimeout(timer);
   }
-  state.submitted = false;
-  state.submitStatus = "unknown";
-  saveState();
+
+  const stored = await checkStoredWithRetries(data.submissionId, 5);
+  if (stored && confirmStored(stored)) return;
+  throw new Error("서버 저장을 확인하지 못했습니다.");
+}
+
+async function checkSavedOnReturn() {
+  if (submitting || hasConfirmedReceipt() || !allAnswered()) return;
+  submitting = true;
+  renderSubmitStatus();
+  try {
+    const existing = await checkStoredWithRetries(state.submissionId);
+    if (existing) confirmStored(existing);
+  } finally {
+    submitting = false;
+    renderSubmitStatus();
+  }
 }
 
 function showResults() {
@@ -1512,75 +1537,14 @@ function showResults() {
   startScreen.classList.add("hidden");
   testScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
-  resultName.textContent = `${state.name}님의 검사 결과`;
-  renderResults(calculateResults());
+  resultName.textContent = `${state.name}님의 검사`;
   renderSubmitStatus();
+  // 이전에 보낸 결과가 있다면 재전송 전에 저장 여부만 조회합니다.
+  if (!hasConfirmedReceipt() && state.submitStatus === "unknown") {
+    void checkSavedOnReturn();
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
-function renderResults(results) {
-
-  majorResults.innerHTML = "";
-
-  for (
-    const [code, major]
-    of Object.entries(results)
-  ) {
-
-    const box =
-      document.createElement(
-        "div"
-      );
-
-    box.className =
-      "major-score";
-
-    let subHTML = "";
-
-    for (
-      const [subCode, sub]
-      of Object.entries(
-        major.subs
-      )
-    ) {
-
-      subHTML += `
-        <div class="subscale">
-          <span>
-            ${subCode} ·
-            ${sub.name}
-          </span>
-
-          <strong>
-            ${sub.score.toFixed(2)}
-          </strong>
-        </div>
-      `;
-    }
-
-    box.innerHTML = `
-      <div class="major-head">
-
-        <div class="major-title">
-          ${code} ·
-          ${major.name}
-        </div>
-
-        <div class="major-number">
-          ${major.score.toFixed(2)}
-        </div>
-
-      </div>
-
-      ${subHTML}
-    `;
-
-    majorResults.appendChild(
-      box
-    );
-  }
-}
-
 
 /* =========================================================
    제출 상태
@@ -1588,33 +1552,37 @@ function renderResults(results) {
 
 function renderSubmitStatus() {
   const confirmed = hasConfirmedReceipt();
-  submitResultButton.disabled = submitting || confirmed;
-  submitResultButton.textContent = submitting ? "전송 중..." :
-    confirmed ? "검사 결과 전송 완료" : "검사 결과 전송하기";
-  if (submitting) {
-    submitStatus.className = "submit-status status-loading";
-    submitStatus.textContent = "검사 결과를 전송하고 저장 여부를 확인하고 있습니다.";
-  } else if (confirmed) {
+  const title = document.getElementById("completionTitle");
+  title.textContent = confirmed ? "검사 제출 완료" : "검사 응답 완료";
+  submitResultButton.classList.toggle("hidden", confirmed);
+  submitResultButton.disabled = submitting;
+  submitResultButton.textContent = submitting ? "전송 확인 중..." :
+    state.submitStatus === "unknown" ? "다시 시도하기" : "검사 결과 제출하기";
+
+  if (confirmed) {
     submitStatus.className = "submit-status status-success";
-    submitStatus.textContent = `서버에서 검사 결과 저장을 확인했습니다. 제출 번호: ${state.submissionId}`;
+    submitStatus.innerHTML = "<strong>검사 결과가 정상적으로 제출되었습니다.</strong><br>" +
+      "검사에 참여해 주셔서 감사합니다.<br>" +
+      "검사 결과는 분석 및 정리 후 개별적으로 전달해 드리겠습니다.";
+  } else if (submitting) {
+    submitStatus.className = "submit-status status-loading";
+    submitStatus.textContent = "검사 결과를 전송하고 저장 여부를 확인하고 있습니다...";
   } else if (state.submitStatus === "unknown") {
     submitStatus.className = "submit-status status-error";
-    submitStatus.textContent = "서버 저장 여부를 확인하지 못했습니다. 이미 저장되었을 수도 있으므로 관리자에게 제출 번호로 확인해주세요. 재전송하면 기존 서버에서는 중복 저장될 수 있습니다. " +
-      `제출 번호: ${state.submissionId || "없음"}. ` +
-      (storageAvailable ? "응답은 이 브라우저에 저장되어 있습니다." : "응답은 현재 열린 화면에만 남아 있습니다. 창을 닫지 마세요.");
+    submitStatus.textContent = "아직 제출 여부를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요. " +
+      (storageAvailable ? "응답은 이 브라우저에 임시 저장되어 있습니다." :
+        "응답을 저장하지 못했으니 화면을 닫지 마세요.");
   } else {
     submitStatus.className = "submit-status status-loading";
-    submitStatus.textContent = "검사가 완료되었습니다. 아래 버튼을 눌러 결과를 전송해주세요.";
+    submitStatus.textContent = "116문항 응답을 마쳤습니다. 아래 버튼을 눌러 제출해 주세요.";
   }
 }
 
 submitResultButton.onclick = async () => {
   if (submitting || hasConfirmedReceipt()) return;
-  if (!allAnswered()) { alert("116문항에 모두 답한 뒤 전송해주세요."); return; }
-  if (state.submitStatus === "unknown" && !confirm(
-    "이전에 전송한 응답이 이미 저장되었을 수 있습니다. 기존 서버에서는 중복 저장될 수 있습니다. 같은 제출 번호로 다시 전송할까요?")) return;
+  if (!allAnswered()) { alert("116문항에 모두 답한 뒤 제출해 주세요."); return; }
   submitting = true;
-  // 전송 중 새로고침/연결 중단도 재접속 시 '확인 불가'로 남깁니다.
+  // 통신이 끊겨도 확인 없이 저장 실패라고 단정하지 않습니다.
   state.submitStatus = "unknown";
   state.submitted = false;
   nameInput.disabled = true;
@@ -1623,6 +1591,7 @@ submitResultButton.onclick = async () => {
   try {
     await submitResults(calculateResults());
   } catch (error) {
+    console.warn("제출 확인 보류:", error);
     state.submitted = false;
     state.submitStatus = "unknown";
     saveState();
