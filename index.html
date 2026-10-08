@@ -1,400 +1,553 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>성격 프로파일 검사 116</title>
+<meta charset="UTF-8">
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+<title>성격 프로파일 검사 116</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    body {
-      margin: 0;
-      font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI",
-        "Noto Sans KR", Arial, sans-serif;
-      background: #f5f6f8;
-      color: #222;
-    }
+body {
+  margin: 0;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans KR",
+    Arial,
+    sans-serif;
+  background: #f5f6f8;
+  color: #222;
+}
 
-    button, input {
-      font: inherit;
-    }
+button,
+input {
+  font: inherit;
+}
 
-    .app {
-      width: min(720px, calc(100% - 28px));
-      margin: 32px auto;
-    }
+.app {
+  width: min(720px, calc(100% - 28px));
+  margin: 32px auto;
+}
 
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 8px 30px rgba(0,0,0,.06);
-    }
+.card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.06);
+}
 
-    h1, h2, h3 {
-      margin-top: 0;
-    }
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
 
-    .muted {
-      color: #6b7280;
-      line-height: 1.65;
-    }
+.muted {
+  color: #6b7280;
+  line-height: 1.65;
+}
 
-    .name-input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid #d6d9df;
-      border-radius: 12px;
-      margin: 12px 0 20px;
-    }
+.name-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #d6d9df;
+  border-radius: 12px;
+  margin: 12px 0 18px;
+}
 
-    .primary,
-    .secondary,
-    .danger {
-      border: 0;
-      padding: 13px 18px;
-      border-radius: 12px;
-      cursor: pointer;
-    }
+.primary,
+.secondary,
+.danger {
+  border: 0;
+  padding: 13px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+}
 
-    .primary {
-      background: #222;
-      color: white;
-    }
+.primary {
+  background: #222;
+  color: white;
+}
 
-    .secondary {
-      background: #eceef2;
-      color: #222;
-    }
+.secondary {
+  background: #eceef2;
+  color: #222;
+}
 
-    .danger {
-      background: #fff0f0;
-      color: #a40000;
-    }
+.danger {
+  background: #fff0f0;
+  color: #a40000;
+}
 
-    .progress-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      margin-bottom: 8px;
-      color: #666;
-    }
+button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
 
-    .progress {
-      height: 9px;
-      background: #e8e9ed;
-      border-radius: 20px;
-      overflow: hidden;
-      margin-bottom: 30px;
-    }
+.notice {
+  padding: 14px 16px;
+  background: #f4f5f7;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 16px 0;
+}
 
-    .progress-bar {
-      height: 100%;
-      background: #222;
-      width: 0;
-      transition: width .2s ease;
-    }
+.consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 20px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
 
-    .question-number {
-      font-size: 14px;
-      color: #777;
-      margin-bottom: 12px;
-    }
+.consent input {
+  margin-top: 4px;
+}
 
-    .question {
-      min-height: 105px;
-      font-size: 23px;
-      line-height: 1.55;
-      font-weight: 650;
-      display: flex;
-      align-items: center;
-    }
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #666;
+}
 
-    .scale-labels {
-      display: flex;
-      justify-content: space-between;
-      color: #777;
-      font-size: 12px;
-      margin: 22px 4px 8px;
-    }
+.progress {
+  height: 9px;
+  background: #e8e9ed;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 30px;
+}
 
-    .scores {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 9px;
-    }
+.progress-bar {
+  height: 100%;
+  background: #222;
+  width: 0;
+  transition: width .2s ease;
+}
 
-    .score {
-      aspect-ratio: 1;
-      border-radius: 50%;
-      border: 2px solid #d5d8de;
-      background: white;
-      font-size: 19px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: .12s ease;
-    }
+.question-number {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 12px;
+}
 
-    .score:hover {
-      transform: translateY(-2px);
-      border-color: #777;
-    }
+.question {
+  min-height: 105px;
+  font-size: 23px;
+  line-height: 1.55;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+}
 
-    .score.selected {
-      background: #222;
-      color: white;
-      border-color: #222;
-    }
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  color: #777;
+  font-size: 12px;
+  margin: 22px 4px 8px;
+}
 
-    .meaning {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-top: 8px;
-      text-align: center;
-      color: #777;
-      font-size: 10px;
-    }
+.scores {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+}
 
-    .navigation {
-      margin-top: 32px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
+.score {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid #d5d8de;
+  background: white;
+  font-size: 19px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .12s ease;
+}
 
-    .navigation button {
-      flex: 1;
-    }
+.score:hover {
+  transform: translateY(-2px);
+  border-color: #777;
+}
 
-    .auto-next {
-      margin-top: 20px;
-      font-size: 13px;
-      color: #666;
-      display: flex;
-      gap: 7px;
-      align-items: center;
-    }
+.score.selected {
+  background: #222;
+  color: white;
+  border-color: #222;
+}
 
-    .hidden {
-      display: none !important;
-    }
+.meaning {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+  text-align: center;
+  color: #777;
+  font-size: 10px;
+}
 
-    .major-score {
-      border-bottom: 1px solid #eee;
-      padding: 18px 0;
-    }
+.navigation {
+  margin-top: 32px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
 
-    .major-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      gap: 10px;
-    }
+.navigation button {
+  flex: 1;
+}
 
-    .major-title {
-      font-size: 19px;
-      font-weight: 750;
-    }
+.auto-next {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
 
-    .major-number {
-      font-size: 25px;
-      font-weight: 800;
-    }
+.hidden {
+  display: none !important;
+}
 
-    .subscale {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      font-size: 14px;
-      color: #555;
-    }
+.major-score {
+  border-bottom: 1px solid #eee;
+  padding: 18px 0;
+}
 
-    .result-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 22px 0;
-    }
+.major-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
 
-    .result-actions button {
-      flex: 1;
-      min-width: 135px;
-    }
+.major-title {
+  font-size: 19px;
+  font-weight: 750;
+}
 
-    textarea {
-      width: 100%;
-      min-height: 230px;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      padding: 14px;
-      resize: vertical;
-      font-size: 12px;
-      line-height: 1.5;
-    }
+.major-number {
+  font-size: 25px;
+  font-weight: 800;
+}
 
-    .notice {
-      padding: 14px 16px;
-      background: #f4f5f7;
-      border-radius: 12px;
-      font-size: 13px;
-      line-height: 1.6;
-      margin: 16px 0;
-    }
+.subscale {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  color: #555;
+}
 
-    @media (max-width: 520px) {
-      .app {
-        margin: 14px auto;
-        width: calc(100% - 20px);
-      }
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 22px 0;
+}
 
-      .card {
-        padding: 21px 17px;
-        border-radius: 16px;
-      }
+.result-actions button {
+  flex: 1;
+  min-width: 135px;
+}
 
-      .question {
-        min-height: 130px;
-        font-size: 20px;
-      }
+textarea {
+  width: 100%;
+  min-height: 230px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 14px;
+  resize: vertical;
+  font-size: 12px;
+  line-height: 1.5;
+}
 
-      .scores {
-        gap: 6px;
-      }
+.submit-status {
+  border-radius: 12px;
+  padding: 15px;
+  margin: 18px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
 
-      .score {
-        font-size: 17px;
-      }
+.status-loading {
+  background: #f4f5f7;
+}
 
-      .meaning {
-        font-size: 8px;
-      }
-    }
-  </style>
+.status-success {
+  background: #eef8f1;
+}
+
+.status-error {
+  background: #fff1f1;
+}
+
+@media (max-width: 520px) {
+  .app {
+    margin: 14px auto;
+    width: calc(100% - 20px);
+  }
+
+  .card {
+    padding: 21px 17px;
+    border-radius: 16px;
+  }
+
+  .question {
+    min-height: 130px;
+    font-size: 20px;
+  }
+
+  .scores {
+    gap: 6px;
+  }
+
+  .score {
+    font-size: 17px;
+  }
+
+  .meaning {
+    font-size: 8px;
+  }
+}
+</style>
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- 시작 화면 -->
-  <section id="startScreen" class="card">
-    <h1>성격 프로파일 검사</h1>
+<section
+  id="startScreen"
+  class="card"
+>
+  <h1>성격 프로파일 검사</h1>
 
-    <p class="muted">
-      총 116문항입니다.<br>
-      이상적인 모습이 아니라 <strong>최근 몇 년간 실제로 반복해서 나타난 모습</strong>을
-      기준으로 답해주세요.
-    </p>
+  <p class="muted">
+    총 116문항입니다.<br><br>
+    이상적인 모습이 아니라
+    <strong>
+      최근 몇 년간 실제로 반복해서 나타난 모습
+    </strong>
+    을 기준으로 답해주세요.
+  </p>
 
-    <div class="notice">
-      1 = 전혀 아니다<br>
-      2 = 아닌 편이다<br>
-      3 = 반반이다 / 상황에 따라 다르다<br>
-      4 = 그런 편이다<br>
-      5 = 매우 그렇다
-    </div>
+  <div class="notice">
+    <strong>응답 기준</strong><br><br>
 
-    <label>
-      이름 또는 구분용 닉네임
-    </label>
+    1 = 전혀 아니다<br>
+    2 = 아닌 편이다<br>
+    3 = 반반이다 / 상황에 따라 다르다<br>
+    4 = 그런 편이다<br>
+    5 = 매우 그렇다
+  </div>
 
+  <div class="notice">
+    본 검사는 성격 탐색을 목적으로
+    새롭게 구성한 비표준화 자기보고 검사입니다.
+    의료·심리 진단을 목적으로 하지 않습니다.<br><br>
+
+    제출한 응답과 검사 점수는
+    검사 결과 분석을 위해 저장됩니다.
+    실명 대신 닉네임을 사용해도 됩니다.
+  </div>
+
+  <label>
+    이름 또는 닉네임
+  </label>
+
+  <input
+    id="nameInput"
+    class="name-input"
+    placeholder="예: 민지"
+  >
+
+  <label class="consent">
     <input
-      id="nameInput"
-      class="name-input"
-      placeholder="예: 홍길동"
-    />
+      type="checkbox"
+      id="consentCheck"
+    >
+    <span>
+      검사 결과 분석을 위해
+      응답과 점수가 저장되는 것에 동의합니다.
+    </span>
+  </label>
 
-    <button id="startButton" class="primary">
-      검사 시작
+  <button
+    id="startButton"
+    class="primary"
+    disabled
+  >
+    검사 시작
+  </button>
+</section>
+
+
+<section
+  id="testScreen"
+  class="card hidden"
+>
+
+  <div class="progress-info">
+    <span id="progressText"></span>
+    <span id="answeredText"></span>
+  </div>
+
+  <div class="progress">
+    <div
+      id="progressBar"
+      class="progress-bar"
+    ></div>
+  </div>
+
+  <div
+    id="questionNumber"
+    class="question-number"
+  ></div>
+
+  <div
+    id="questionText"
+    class="question"
+  ></div>
+
+  <div class="scale-labels">
+    <span>전혀 아니다</span>
+    <span>매우 그렇다</span>
+  </div>
+
+  <div
+    id="scoreButtons"
+    class="scores"
+  ></div>
+
+  <div class="meaning">
+    <span>1</span>
+    <span>2</span>
+    <span>3</span>
+    <span>4</span>
+    <span>5</span>
+  </div>
+
+  <label class="auto-next">
+    <input
+      type="checkbox"
+      id="autoNext"
+      checked
+    >
+    답을 선택하면 자동으로 다음 문항으로 이동
+  </label>
+
+  <div class="navigation">
+
+    <button
+      id="prevButton"
+      class="secondary"
+    >
+      이전
     </button>
-  </section>
+
+    <button
+      id="nextButton"
+      class="primary"
+    >
+      다음
+    </button>
+
+  </div>
+</section>
 
 
-  <!-- 검사 화면 -->
-  <section id="testScreen" class="card hidden">
+<section
+  id="resultScreen"
+  class="card hidden"
+>
 
-    <div class="progress-info">
-      <span id="progressText"></span>
-      <span id="answeredText"></span>
-    </div>
+  <h1>검사 완료</h1>
 
-    <div class="progress">
-      <div id="progressBar" class="progress-bar"></div>
-    </div>
+  <p
+    id="resultName"
+    class="muted"
+  ></p>
 
-    <div id="questionNumber" class="question-number"></div>
-    <div id="questionText" class="question"></div>
+  <div
+    id="submitStatus"
+    class="submit-status status-loading"
+  >
+    검사 결과를 저장하고 있습니다.
+  </div>
 
-    <div class="scale-labels">
-      <span>전혀 아니다</span>
-      <span>매우 그렇다</span>
-    </div>
+  <div class="notice">
+    점수는 1.00~5.00 범위입니다.
+    한국 성인 규준의 백분위 점수가 아니라
+    응답자의 개인 성향 프로파일을 확인하기 위한 점수입니다.
+  </div>
 
-    <div id="scoreButtons" class="scores"></div>
+  <div id="majorResults"></div>
 
-    <div class="meaning">
-      <span>1</span>
-      <span>2</span>
-      <span>3</span>
-      <span>4</span>
-      <span>5</span>
-    </div>
+  <div class="result-actions">
 
-    <label class="auto-next">
-      <input type="checkbox" id="autoNext" checked>
-      답을 선택하면 자동으로 다음 문항으로 이동
-    </label>
+    <button
+      id="retrySubmit"
+      class="secondary hidden"
+    >
+      다시 제출
+    </button>
 
-    <div class="navigation">
-      <button id="prevButton" class="secondary">이전</button>
-      <button id="nextButton" class="primary">다음</button>
-    </div>
-  </section>
+    <button
+      id="copySummary"
+      class="primary"
+    >
+      결과 복사
+    </button>
 
+    <button
+      id="copyFull"
+      class="secondary"
+    >
+      전체 응답 복사
+    </button>
 
-  <!-- 결과 화면 -->
-  <section id="resultScreen" class="card hidden">
+    <button
+      id="restartButton"
+      class="danger"
+    >
+      새 검사 시작
+    </button>
 
-    <h1>검사 결과</h1>
+  </div>
 
-    <p id="resultName" class="muted"></p>
+  <details>
+    <summary>
+      분석용 원자료 보기
+    </summary>
 
-    <div class="notice">
-      점수는 1.00~5.00 범위입니다.
-      이 검사는 TCI의 이론적 성격 차원을 참고해 새로 만든 비표준화 자기보고 척도로,
-      의학적·임상적 진단용 검사가 아닙니다.
-    </div>
-
-    <div id="majorResults"></div>
-
-    <div class="result-actions">
-      <button id="copySummary" class="primary">
-        결과 복사
-      </button>
-
-      <button id="copyFull" class="secondary">
-        전체 응답 복사
-      </button>
-
-      <button id="restartButton" class="danger">
-        검사 초기화
-      </button>
-    </div>
-
-    <h3>분석용 원자료</h3>
     <p class="muted">
-      이 내용을 그대로 ChatGPT에 붙여주면 세부 프로파일과 두 사람 비교 분석을 할 수 있습니다.
+      아래 내용을 ChatGPT에 붙여 넣으면
+      세부 프로파일 분석에 사용할 수 있습니다.
     </p>
 
-    <textarea id="rawOutput" readonly></textarea>
+    <textarea
+      id="rawOutput"
+      readonly
+    ></textarea>
 
-  </section>
+  </details>
+
+</section>
 
 </div>
 
@@ -402,7 +555,21 @@
 <script>
 
 /* =========================================================
-   1. 검사 문항
+   Google Apps Script 주소
+========================================================= */
+
+const SUBMIT_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbxU7k3ITwUQhnI2XGw-5Ra7I1YRAFAmyupADSE7nA8JdVgkc22zKN_W47NPtCTVfO_6/exec";
+
+const TEST_VERSION =
+  "personality116_v2";
+
+const STORAGE_KEY =
+  "personality116_v2";
+
+
+/* =========================================================
+   문항
 ========================================================= */
 
 const questions = [
@@ -539,283 +706,416 @@ const questions = [
 
 
 /* =========================================================
-   2. 채점 구조
-   q = 문항 번호
-   r = true면 역채점
+   채점 구조
 ========================================================= */
 
 const scales = {
 
-  NS: {
-    name: "자극추구",
-    subs: {
-      NS1: {
-        name: "새로움·탐색성",
-        items: [[18,true],[33,false],[46,false],[67,false]]
-      },
-      NS2: {
-        name: "충동적 의사결정",
-        items: [[7,true],[69,false],[79,false],[104,true]]
-      },
-      NS3: {
-        name: "소비·방출성",
-        items: [[19,false],[52,false],[62,true],[100,true]]
-      },
-      NS4: {
-        name: "자유분방성·낮은 질서선호",
-        items: [[12,false],[42,true],[55,true],[64,false]]
-      }
-    }
-  },
-
-  HA: {
-    name: "위험회피",
-    subs: {
-      HA1: {
-        name: "예기불안",
-        items: [[4,false],[27,false],[106,false],[109,true]]
-      },
-      HA2: {
-        name: "불확실성 민감성",
-        items: [[16,true],[25,true],[39,false],[94,false]]
-      },
-      HA3: {
-        name: "낯선 관계에서의 위축",
-        items: [[57,true],[66,false],[71,true],[75,false]]
-      },
-      HA4: {
-        name: "피로·스트레스 민감성",
-        items: [[23,true],[32,false],[83,false],[86,true]]
-      }
-    }
-  },
-
-  RD: {
-    name: "사회적 민감성",
-    subs: {
-      RD1: {
-        name: "정서적 감응성",
-        items: [[14,false],[29,false],[82,true],[115,true]]
-      },
-      RD2: {
-        name: "따뜻한 정서교류",
-        items: [[61,true],[76,false],[89,true],[102,false]]
-      },
-      RD3: {
-        name: "애착",
-        items: [[48,true],[58,false],[73,false],[105,true]]
-      },
-      RD4: {
-        name: "인정·지지 의존성",
-        items: [[5,true],[9,false],[87,false],[97,true]]
-      }
-    }
-  },
-
-  P: {
-    name: "인내력",
-    subs: {
-      P1: {
-        name: "노력 투입",
-        items: [[26,false],[88,true],[113,false],[116,false]]
-      },
-      P2: {
-        name: "지속성",
-        items: [[11,true],[43,false],[47,true],[78,false]]
-      },
-      P3: {
-        name: "성취지향성",
-        items: [[8,false],[51,false],[101,true],[103,true]]
-      },
-      P4: {
-        name: "완벽·완성도 추구",
-        items: [[1,true],[20,false],[72,false],[84,true]]
-      }
-    }
-  },
-
-  SD: {
-    name: "자율성",
-    subs: {
-      SD1: {
-        name: "책임수용",
-        items: [[13,true],[37,false],[56,false],[74,false]]
-      },
-      SD2: {
-        name: "목적·방향성",
-        items: [[38,false],[65,false],[68,true],[91,false]]
-      },
-      SD3: {
-        name: "문제해결·자원성",
-        items: [[35,true],[45,false],[108,false],[114,false]]
-      },
-      SD4: {
-        name: "자기수용",
-        items: [[6,true],[40,false],[49,false],[93,true]]
-      },
-      SD5: {
-        name: "가치와 행동의 일치",
-        items: [[2,false],[17,false],[21,true],[30,true]]
-      }
-    }
-  },
-
-  C: {
-    name: "연대감",
-    subs: {
-      C1: {
-        name: "타인 수용",
-        items: [[28,false],[31,true],[41,true],[111,false]]
-      },
-      C2: {
-        name: "공감·관점수용",
-        items: [[10,true],[77,false],[95,false],[107,true]]
-      },
-      C3: {
-        name: "도움·협력",
-        items: [[24,true],[59,false],[63,false],[85,true]]
-      },
-      C4: {
-        name: "관용·용서",
-        items: [[44,true],[60,true],[70,false],[110,false]]
-      },
-      C5: {
-        name: "양심·공정성",
-        items: [[3,false],[22,true],[36,false],[112,true]]
-      }
-    }
-  },
-
-  ST: {
-    name: "자기초월",
-    subs: {
-      ST1: {
-        name: "몰입·자기망각",
-        items: [[15,true],[50,false],[90,true],[98,false]]
-      },
-      ST2: {
-        name: "초개인적 연결감",
-        items: [[54,true],[80,false],[92,false],[99,true]]
-      },
-      ST3: {
-        name: "초월적·영적 수용성",
-        items: [[34,false],[53,true],[81,false],[96,true]]
-      }
+NS: {
+  name: "자극추구",
+  subs: {
+    NS1: {
+      name: "새로움·탐색성",
+      items: [[18,true],[33,false],[46,false],[67,false]]
+    },
+    NS2: {
+      name: "충동적 의사결정",
+      items: [[7,true],[69,false],[79,false],[104,true]]
+    },
+    NS3: {
+      name: "소비·방출성",
+      items: [[19,false],[52,false],[62,true],[100,true]]
+    },
+    NS4: {
+      name: "자유분방성·낮은 질서선호",
+      items: [[12,false],[42,true],[55,true],[64,false]]
     }
   }
+},
+
+HA: {
+  name: "위험회피",
+  subs: {
+    HA1: {
+      name: "예기불안",
+      items: [[4,false],[27,false],[106,false],[109,true]]
+    },
+    HA2: {
+      name: "불확실성 민감성",
+      items: [[16,true],[25,true],[39,false],[94,false]]
+    },
+    HA3: {
+      name: "낯선 관계에서의 위축",
+      items: [[57,true],[66,false],[71,true],[75,false]]
+    },
+    HA4: {
+      name: "피로·스트레스 민감성",
+      items: [[23,true],[32,false],[83,false],[86,true]]
+    }
+  }
+},
+
+RD: {
+  name: "사회적 민감성",
+  subs: {
+    RD1: {
+      name: "정서적 감응성",
+      items: [[14,false],[29,false],[82,true],[115,true]]
+    },
+    RD2: {
+      name: "따뜻한 정서교류",
+      items: [[61,true],[76,false],[89,true],[102,false]]
+    },
+    RD3: {
+      name: "애착",
+      items: [[48,true],[58,false],[73,false],[105,true]]
+    },
+    RD4: {
+      name: "인정·지지 의존성",
+      items: [[5,true],[9,false],[87,false],[97,true]]
+    }
+  }
+},
+
+P: {
+  name: "인내력",
+  subs: {
+    P1: {
+      name: "노력 투입",
+      items: [[26,false],[88,true],[113,false],[116,false]]
+    },
+    P2: {
+      name: "지속성",
+      items: [[11,true],[43,false],[47,true],[78,false]]
+    },
+    P3: {
+      name: "성취지향성",
+      items: [[8,false],[51,false],[101,true],[103,true]]
+    },
+    P4: {
+      name: "완벽·완성도 추구",
+      items: [[1,true],[20,false],[72,false],[84,true]]
+    }
+  }
+},
+
+SD: {
+  name: "자율성",
+  subs: {
+    SD1: {
+      name: "책임수용",
+      items: [[13,true],[37,false],[56,false],[74,false]]
+    },
+    SD2: {
+      name: "목적·방향성",
+      items: [[38,false],[65,false],[68,true],[91,false]]
+    },
+    SD3: {
+      name: "문제해결·자원성",
+      items: [[35,true],[45,false],[108,false],[114,false]]
+    },
+    SD4: {
+      name: "자기수용",
+      items: [[6,true],[40,false],[49,false],[93,true]]
+    },
+    SD5: {
+      name: "가치와 행동의 일치",
+      items: [[2,false],[17,false],[21,true],[30,true]]
+    }
+  }
+},
+
+C: {
+  name: "연대감",
+  subs: {
+    C1: {
+      name: "타인 수용",
+      items: [[28,false],[31,true],[41,true],[111,false]]
+    },
+    C2: {
+      name: "공감·관점수용",
+      items: [[10,true],[77,false],[95,false],[107,true]]
+    },
+    C3: {
+      name: "도움·협력",
+      items: [[24,true],[59,false],[63,false],[85,true]]
+    },
+    C4: {
+      name: "관용·용서",
+      items: [[44,true],[60,true],[70,false],[110,false]]
+    },
+    C5: {
+      name: "양심·공정성",
+      items: [[3,false],[22,true],[36,false],[112,true]]
+    }
+  }
+},
+
+ST: {
+  name: "자기초월",
+  subs: {
+    ST1: {
+      name: "몰입·자기망각",
+      items: [[15,true],[50,false],[90,true],[98,false]]
+    },
+    ST2: {
+      name: "초개인적 연결감",
+      items: [[54,true],[80,false],[92,false],[99,true]]
+    },
+    ST3: {
+      name: "초월적·영적 수용성",
+      items: [[34,false],[53,true],[81,false],[96,true]]
+    }
+  }
+}
 
 };
 
 
 /* =========================================================
-   3. 상태 저장
+   상태
 ========================================================= */
-
-const STORAGE_KEY = "personality116_v1";
 
 let state = {
   name: "",
   current: 0,
   answers: Array(questions.length).fill(null),
-  autoNext: true
+  autoNext: true,
+  submissionId: null,
+  submitted: false
 };
 
+
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(state)
+  );
 }
+
 
 function loadState() {
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved =
+    localStorage.getItem(STORAGE_KEY);
 
   if (!saved) return;
 
   try {
-    const parsed = JSON.parse(saved);
 
-    state.name = parsed.name || "";
-    state.current = Number.isInteger(parsed.current)
-      ? Math.min(parsed.current, questions.length - 1)
-      : 0;
+    const parsed =
+      JSON.parse(saved);
+
+    state.name =
+      parsed.name || "";
+
+    state.current =
+      Number.isInteger(parsed.current)
+        ? Math.min(
+            parsed.current,
+            questions.length - 1
+          )
+        : 0;
 
     if (
       Array.isArray(parsed.answers) &&
       parsed.answers.length === questions.length
     ) {
-      state.answers = parsed.answers;
+      state.answers =
+        parsed.answers;
     }
 
-    state.autoNext = parsed.autoNext !== false;
+    state.autoNext =
+      parsed.autoNext !== false;
 
-  } catch (e) {
-    console.warn("저장된 검사 데이터 복구 실패", e);
+    state.submissionId =
+      parsed.submissionId || null;
+
+    state.submitted =
+      parsed.submitted === true;
+
+  } catch (error) {
+    console.warn(error);
   }
-
 }
 
 
 /* =========================================================
-   4. DOM
+   DOM
 ========================================================= */
 
-const startScreen = document.getElementById("startScreen");
-const testScreen = document.getElementById("testScreen");
-const resultScreen = document.getElementById("resultScreen");
+const startScreen =
+  document.getElementById("startScreen");
 
-const nameInput = document.getElementById("nameInput");
-const startButton = document.getElementById("startButton");
+const testScreen =
+  document.getElementById("testScreen");
 
-const progressText = document.getElementById("progressText");
-const answeredText = document.getElementById("answeredText");
-const progressBar = document.getElementById("progressBar");
+const resultScreen =
+  document.getElementById("resultScreen");
 
-const questionNumber = document.getElementById("questionNumber");
-const questionText = document.getElementById("questionText");
+const nameInput =
+  document.getElementById("nameInput");
 
-const scoreButtons = document.getElementById("scoreButtons");
+const consentCheck =
+  document.getElementById("consentCheck");
 
-const prevButton = document.getElementById("prevButton");
-const nextButton = document.getElementById("nextButton");
-const autoNext = document.getElementById("autoNext");
+const startButton =
+  document.getElementById("startButton");
 
-const resultName = document.getElementById("resultName");
-const majorResults = document.getElementById("majorResults");
-const rawOutput = document.getElementById("rawOutput");
+const progressText =
+  document.getElementById("progressText");
 
-const copySummary = document.getElementById("copySummary");
-const copyFull = document.getElementById("copyFull");
-const restartButton = document.getElementById("restartButton");
+const answeredText =
+  document.getElementById("answeredText");
+
+const progressBar =
+  document.getElementById("progressBar");
+
+const questionNumber =
+  document.getElementById("questionNumber");
+
+const questionText =
+  document.getElementById("questionText");
+
+const scoreButtons =
+  document.getElementById("scoreButtons");
+
+const prevButton =
+  document.getElementById("prevButton");
+
+const nextButton =
+  document.getElementById("nextButton");
+
+const autoNext =
+  document.getElementById("autoNext");
+
+const resultName =
+  document.getElementById("resultName");
+
+const majorResults =
+  document.getElementById("majorResults");
+
+const submitStatus =
+  document.getElementById("submitStatus");
+
+const retrySubmit =
+  document.getElementById("retrySubmit");
+
+const rawOutput =
+  document.getElementById("rawOutput");
+
+const copySummary =
+  document.getElementById("copySummary");
+
+const copyFull =
+  document.getElementById("copyFull");
+
+const restartButton =
+  document.getElementById("restartButton");
 
 
 /* =========================================================
-   5. 시작
+   초기화
 ========================================================= */
 
 loadState();
 
-nameInput.value = state.name;
-autoNext.checked = state.autoNext;
+nameInput.value =
+  state.name;
+
+autoNext.checked =
+  state.autoNext;
+
+
+consentCheck.onchange = () => {
+  startButton.disabled =
+    !consentCheck.checked;
+};
+
+
+const answeredCount =
+  state.answers.filter(
+    value => value !== null
+  ).length;
+
+if (answeredCount > 0) {
+
+  if (
+    answeredCount ===
+    questions.length
+  ) {
+    startButton.textContent =
+      "결과 다시 보기";
+  } else {
+    startButton.textContent =
+      `이어하기 (${answeredCount}/${questions.length})`;
+  }
+}
+
+
+/* =========================================================
+   검사 시작
+========================================================= */
 
 startButton.onclick = () => {
 
-  state.name = nameInput.value.trim() || "응답자";
+  if (!consentCheck.checked) {
+    return;
+  }
+
+  state.name =
+    nameInput.value.trim() ||
+    "익명";
+
+  if (!state.submissionId) {
+
+    if (
+      typeof crypto !== "undefined" &&
+      crypto.randomUUID
+    ) {
+      state.submissionId =
+        crypto.randomUUID();
+    } else {
+      state.submissionId =
+        Date.now().toString(36) +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2);
+    }
+  }
 
   saveState();
 
-  startScreen.classList.add("hidden");
-  testScreen.classList.remove("hidden");
+  if (
+    state.answers.every(
+      value => value !== null
+    )
+  ) {
+    showResults();
+    return;
+  }
+
+  startScreen.classList.add(
+    "hidden"
+  );
+
+  testScreen.classList.remove(
+    "hidden"
+  );
 
   renderQuestion();
 };
 
 
 /* =========================================================
-   6. 문항 표시
+   문항 표시
 ========================================================= */
 
 function renderQuestion() {
 
-  const i = state.current;
+  const i =
+    state.current;
 
   questionNumber.textContent =
     `문항 ${i + 1}`;
@@ -827,41 +1127,60 @@ function renderQuestion() {
     `${i + 1} / ${questions.length}`;
 
   const answered =
-    state.answers.filter(v => v !== null).length;
+    state.answers.filter(
+      value => value !== null
+    ).length;
 
   answeredText.textContent =
     `응답 ${answered}/${questions.length}`;
 
   progressBar.style.width =
-    `${((i + 1) / questions.length) * 100}%`;
+    `${((i + 1) /
+      questions.length) * 100}%`;
 
   scoreButtons.innerHTML = "";
 
-  for (let value = 1; value <= 5; value++) {
+  for (
+    let value = 1;
+    value <= 5;
+    value++
+  ) {
 
-    const btn = document.createElement("button");
+    const button =
+      document.createElement(
+        "button"
+      );
 
-    btn.className = "score";
-    btn.textContent = value;
+    button.className =
+      "score";
 
-    if (state.answers[i] === value) {
-      btn.classList.add("selected");
+    button.textContent =
+      value;
+
+    if (
+      state.answers[i] === value
+    ) {
+      button.classList.add(
+        "selected"
+      );
     }
 
-    btn.onclick = () => {
+    button.onclick = () => {
       answerQuestion(value);
     };
 
-    scoreButtons.appendChild(btn);
+    scoreButtons.appendChild(
+      button
+    );
   }
 
-  prevButton.disabled = i === 0;
+  prevButton.disabled =
+    i === 0;
 
-  if (i === questions.length - 1) {
-    nextButton.textContent = "결과 보기";
-  } else {
-    nextButton.textContent = "다음";
-  }
+  nextButton.textContent =
+    i === questions.length - 1
+      ? "검사 제출"
+      : "다음";
 
   window.scrollTo({
     top: 0,
@@ -871,25 +1190,29 @@ function renderQuestion() {
 
 
 /* =========================================================
-   7. 답변
+   답변
 ========================================================= */
 
 function answerQuestion(value) {
 
-  state.answers[state.current] = value;
+  state.answers[state.current] =
+    value;
 
   saveState();
   renderQuestion();
 
   if (
     state.autoNext &&
-    state.current < questions.length - 1
+    state.current <
+      questions.length - 1
   ) {
 
     setTimeout(() => {
 
       state.current++;
+
       saveState();
+
       renderQuestion();
 
     }, 130);
@@ -899,25 +1222,34 @@ function answerQuestion(value) {
 
 prevButton.onclick = () => {
 
-  if (state.current <= 0) return;
+  if (state.current <= 0) {
+    return;
+  }
 
   state.current--;
 
   saveState();
+
   renderQuestion();
 };
 
 
 nextButton.onclick = () => {
 
-  if (state.answers[state.current] === null) {
-
-    alert("현재 문항에 먼저 답해주세요.");
+  if (
+    state.answers[state.current] ===
+    null
+  ) {
+    alert(
+      "현재 문항에 먼저 답해주세요."
+    );
     return;
   }
 
-  if (state.current === questions.length - 1) {
-
+  if (
+    state.current ===
+    questions.length - 1
+  ) {
     finishTest();
     return;
   }
@@ -925,60 +1257,95 @@ nextButton.onclick = () => {
   state.current++;
 
   saveState();
+
   renderQuestion();
 };
 
 
 autoNext.onchange = () => {
 
-  state.autoNext = autoNext.checked;
+  state.autoNext =
+    autoNext.checked;
+
   saveState();
 };
 
 
-/* 키보드 1~5 응답 */
+/* 데스크톱 키보드 응답 */
 
-document.addEventListener("keydown", e => {
+document.addEventListener(
+  "keydown",
+  event => {
 
-  if (testScreen.classList.contains("hidden")) return;
+    if (
+      testScreen.classList.contains(
+        "hidden"
+      )
+    ) {
+      return;
+    }
 
-  const n = Number(e.key);
+    const number =
+      Number(event.key);
 
-  if (n >= 1 && n <= 5) {
-    answerQuestion(n);
+    if (
+      number >= 1 &&
+      number <= 5
+    ) {
+      answerQuestion(number);
+    }
+
+    if (
+      event.key === "ArrowLeft"
+    ) {
+      prevButton.click();
+    }
+
+    if (
+      event.key === "ArrowRight"
+    ) {
+      nextButton.click();
+    }
   }
-
-  if (e.key === "ArrowLeft") {
-    prevButton.click();
-  }
-
-  if (e.key === "ArrowRight") {
-    nextButton.click();
-  }
-
-});
+);
 
 
 /* =========================================================
-   8. 점수 계산
+   점수 계산
 ========================================================= */
 
-function scoredAnswer(questionNumber, reverse) {
+function scoredAnswer(
+  questionNumber,
+  reverse
+) {
 
-  const raw = state.answers[questionNumber - 1];
+  const raw =
+    state.answers[
+      questionNumber - 1
+    ];
 
-  if (raw === null) return null;
+  if (raw === null) {
+    return null;
+  }
 
-  return reverse ? 6 - raw : raw;
+  return reverse
+    ? 6 - raw
+    : raw;
 }
 
 
 function average(values) {
 
-  if (!values.length) return 0;
+  if (!values.length) {
+    return 0;
+  }
 
-  return values.reduce((a,b) => a + b, 0)
-    / values.length;
+  return (
+    values.reduce(
+      (a,b) => a + b,
+      0
+    ) / values.length
+  );
 }
 
 
@@ -986,15 +1353,27 @@ function calculateResults() {
 
   const results = {};
 
-  for (const [majorCode, major] of Object.entries(scales)) {
+  for (
+    const [majorCode, major]
+    of Object.entries(scales)
+  ) {
 
     const subResults = {};
 
-    for (const [subCode, sub] of Object.entries(major.subs)) {
+    for (
+      const [subCode, sub]
+      of Object.entries(
+        major.subs
+      )
+    ) {
 
       const values =
-        sub.items.map(([q, reverse]) =>
-          scoredAnswer(q, reverse)
+        sub.items.map(
+          ([q, reverse]) =>
+            scoredAnswer(
+              q,
+              reverse
+            )
         );
 
       subResults[subCode] = {
@@ -1006,8 +1385,11 @@ function calculateResults() {
 
     const majorScore =
       average(
-        Object.values(subResults)
-          .map(s => s.score)
+        Object.values(
+          subResults
+        ).map(
+          sub => sub.score
+        )
       );
 
     results[majorCode] = {
@@ -1022,18 +1404,23 @@ function calculateResults() {
 
 
 /* =========================================================
-   9. 검사 완료
+   검사 완료
 ========================================================= */
 
 function finishTest() {
 
   const missing = [];
 
-  state.answers.forEach((answer, i) => {
-    if (answer === null) {
-      missing.push(i + 1);
+  state.answers.forEach(
+    (answer, index) => {
+
+      if (answer === null) {
+        missing.push(
+          index + 1
+        );
+      }
     }
-  });
+  );
 
   if (missing.length) {
 
@@ -1042,9 +1429,11 @@ function finishTest() {
       `첫 미응답 문항: ${missing[0]}번`
     );
 
-    state.current = missing[0] - 1;
+    state.current =
+      missing[0] - 1;
 
     saveState();
+
     renderQuestion();
 
     return;
@@ -1055,58 +1444,167 @@ function finishTest() {
 
 
 /* =========================================================
-   10. 결과 표시
+   서버 제출용 데이터
 ========================================================= */
 
-function showResults() {
+function buildExportData(
+  results
+) {
 
-  const results = calculateResults();
+  const data = {
+    version:
+      TEST_VERSION,
 
-  testScreen.classList.add("hidden");
-  resultScreen.classList.remove("hidden");
+    submissionId:
+      state.submissionId,
+
+    name:
+      state.name,
+
+    completedAt:
+      new Date()
+        .toISOString(),
+
+    responses:
+      [...state.answers],
+
+    scores: {}
+  };
+
+  for (
+    const [code, major]
+    of Object.entries(results)
+  ) {
+
+    data.scores[code] = {
+      score:
+        Number(
+          major.score.toFixed(3)
+        ),
+
+      subs: {}
+    };
+
+    for (
+      const [subCode, sub]
+      of Object.entries(
+        major.subs
+      )
+    ) {
+
+      data.scores[code]
+        .subs[subCode] =
+          Number(
+            sub.score.toFixed(3)
+          );
+    }
+  }
+
+  return data;
+}
+
+
+/* =========================================================
+   Google Sheet 제출
+========================================================= */
+
+async function submitResults(
+  results
+) {
+
+  if (state.submitted) {
+    return true;
+  }
+
+  const data =
+    buildExportData(results);
+
+  const body =
+    new URLSearchParams();
+
+  body.append(
+    "payload",
+    JSON.stringify(data)
+  );
+
+  try {
+
+    await fetch(
+      SUBMIT_ENDPOINT,
+      {
+        method: "POST",
+        mode: "no-cors",
+        body
+      }
+    );
+
+    state.submitted =
+      true;
+
+    saveState();
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "제출 실패",
+      error
+    );
+
+    return false;
+  }
+}
+
+
+/* =========================================================
+   결과 표시
+========================================================= */
+
+async function showResults() {
+
+  const results =
+    calculateResults();
+
+  startScreen.classList.add(
+    "hidden"
+  );
+
+  testScreen.classList.add(
+    "hidden"
+  );
+
+  resultScreen.classList.remove(
+    "hidden"
+  );
 
   resultName.textContent =
-    `${state.name}님의 결과`;
+    `${state.name}님의 검사 결과`;
 
-  majorResults.innerHTML = "";
-
-  for (const [code, major] of Object.entries(results)) {
-
-    const box = document.createElement("div");
-
-    box.className = "major-score";
-
-    let subHTML = "";
-
-    for (const [subCode, sub] of Object.entries(major.subs)) {
-
-      subHTML += `
-        <div class="subscale">
-          <span>${subCode} · ${sub.name}</span>
-          <strong>${sub.score.toFixed(2)}</strong>
-        </div>
-      `;
-    }
-
-    box.innerHTML = `
-      <div class="major-head">
-        <div class="major-title">
-          ${code} · ${major.name}
-        </div>
-
-        <div class="major-number">
-          ${major.score.toFixed(2)}
-        </div>
-      </div>
-
-      ${subHTML}
-    `;
-
-    majorResults.appendChild(box);
-  }
+  renderResults(results);
 
   rawOutput.value =
     makeFullOutput(results);
+
+  if (state.submitted) {
+
+    setSubmitSuccess();
+
+  } else {
+
+    setSubmitLoading();
+
+    const success =
+      await submitResults(
+        results
+      );
+
+    if (success) {
+      setSubmitSuccess();
+    } else {
+      setSubmitError();
+    }
+  }
 
   window.scrollTo({
     top: 0,
@@ -1115,28 +1613,174 @@ function showResults() {
 }
 
 
+function renderResults(results) {
+
+  majorResults.innerHTML = "";
+
+  for (
+    const [code, major]
+    of Object.entries(results)
+  ) {
+
+    const box =
+      document.createElement(
+        "div"
+      );
+
+    box.className =
+      "major-score";
+
+    let subHTML = "";
+
+    for (
+      const [subCode, sub]
+      of Object.entries(
+        major.subs
+      )
+    ) {
+
+      subHTML += `
+        <div class="subscale">
+          <span>
+            ${subCode} ·
+            ${sub.name}
+          </span>
+
+          <strong>
+            ${sub.score.toFixed(2)}
+          </strong>
+        </div>
+      `;
+    }
+
+    box.innerHTML = `
+      <div class="major-head">
+
+        <div class="major-title">
+          ${code} ·
+          ${major.name}
+        </div>
+
+        <div class="major-number">
+          ${major.score.toFixed(2)}
+        </div>
+
+      </div>
+
+      ${subHTML}
+    `;
+
+    majorResults.appendChild(
+      box
+    );
+  }
+}
+
+
 /* =========================================================
-   11. 분석용 출력
+   제출 상태
+========================================================= */
+
+function setSubmitLoading() {
+
+  submitStatus.className =
+    "submit-status status-loading";
+
+  submitStatus.textContent =
+    "검사 결과를 저장하고 있습니다.";
+
+  retrySubmit.classList.add(
+    "hidden"
+  );
+}
+
+
+function setSubmitSuccess() {
+
+  submitStatus.className =
+    "submit-status status-success";
+
+  submitStatus.innerHTML =
+    "<strong>제출 완료</strong><br>" +
+    "검사 결과가 정상적으로 제출되었습니다.";
+
+  retrySubmit.classList.add(
+    "hidden"
+  );
+}
+
+
+function setSubmitError() {
+
+  submitStatus.className =
+    "submit-status status-error";
+
+  submitStatus.innerHTML =
+    "<strong>자동 제출을 확인하지 못했습니다.</strong><br>" +
+    "인터넷 연결을 확인한 뒤 다시 제출해주세요. " +
+    "응답은 이 기기에 그대로 저장되어 있습니다.";
+
+  retrySubmit.classList.remove(
+    "hidden"
+  );
+}
+
+
+retrySubmit.onclick =
+  async () => {
+
+    state.submitted =
+      false;
+
+    saveState();
+
+    const results =
+      calculateResults();
+
+    setSubmitLoading();
+
+    const success =
+      await submitResults(
+        results
+      );
+
+    if (success) {
+      setSubmitSuccess();
+    } else {
+      setSubmitError();
+    }
+  };
+
+
+/* =========================================================
+   결과 텍스트
 ========================================================= */
 
 function makeSummary(results) {
 
-  let text = "";
-
-  text +=
+  let text =
 `[116문항 성격 프로파일 결과]
 
 이름: ${state.name}
+검사버전: ${TEST_VERSION}
 
 `;
 
-  for (const [code, major] of Object.entries(results)) {
+  for (
+    const [code, major]
+    of Object.entries(results)
+  ) {
 
     text +=
 `${code} ${major.name}: ${major.score.toFixed(2)}
 `;
 
-    for (const [subCode, sub] of Object.entries(major.subs)) {
+    for (
+      const [subCode, sub]
+      of Object.entries(
+        major.subs
+      )
+    ) {
 
       text +=
 `- ${subCode} ${sub.name}: ${sub.score.toFixed(2)}
@@ -1150,9 +1794,12 @@ function makeSummary(results) {
 }
 
 
-function makeFullOutput(results) {
+function makeFullOutput(
+  results
+) {
 
-  let text = makeSummary(results);
+  let text =
+    makeSummary(results);
 
   text +=
 `========================
@@ -1161,12 +1808,14 @@ function makeFullOutput(results) {
 
 `;
 
-  state.answers.forEach((answer, i) => {
+  state.answers.forEach(
+    (answer, index) => {
 
-    text +=
-`${i + 1}: ${answer}
+      text +=
+`${index + 1}: ${answer}
 `;
-  });
+    }
+  );
 
   text +=
 `
@@ -1175,74 +1824,76 @@ JSON
 ========================
 `;
 
-  const exportData = {
-    version: "personality116_v1",
-    name: state.name,
-    responses: state.answers,
-    scores: {}
-  };
-
-  for (const [code, major] of Object.entries(results)) {
-
-    exportData.scores[code] = {
-      score: Number(major.score.toFixed(3)),
-      subs: {}
-    };
-
-    for (const [subCode, sub] of Object.entries(major.subs)) {
-
-      exportData.scores[code].subs[subCode] =
-        Number(sub.score.toFixed(3));
-    }
-  }
-
   text +=
-    JSON.stringify(exportData, null, 2);
+    JSON.stringify(
+      buildExportData(results),
+      null,
+      2
+    );
 
   return text;
 }
 
 
 /* =========================================================
-   12. 복사
+   복사
 ========================================================= */
 
-copySummary.onclick = async () => {
+copySummary.onclick =
+  async () => {
 
-  const text =
-    makeSummary(calculateResults());
+    const text =
+      makeSummary(
+        calculateResults()
+      );
 
-  await copyText(text);
+    await copyText(text);
 
-  alert("검사 결과를 복사했습니다.");
-};
+    alert(
+      "검사 결과를 복사했습니다."
+    );
+  };
 
 
-copyFull.onclick = async () => {
+copyFull.onclick =
+  async () => {
 
-  await copyText(rawOutput.value);
+    await copyText(
+      rawOutput.value
+    );
 
-  alert("점수와 116개 원응답을 모두 복사했습니다.");
-};
+    alert(
+      "점수와 116개 원응답을 모두 복사했습니다."
+    );
+  };
 
 
 async function copyText(text) {
 
   try {
 
-    await navigator.clipboard.writeText(text);
+    await navigator
+      .clipboard
+      .writeText(text);
 
   } catch {
 
-    const temp = document.createElement("textarea");
+    const temp =
+      document.createElement(
+        "textarea"
+      );
 
-    temp.value = text;
+    temp.value =
+      text;
 
-    document.body.appendChild(temp);
+    document.body
+      .appendChild(temp);
 
     temp.select();
 
-    document.execCommand("copy");
+    document.execCommand(
+      "copy"
+    );
 
     temp.remove();
   }
@@ -1250,35 +1901,26 @@ async function copyText(text) {
 
 
 /* =========================================================
-   13. 초기화
+   새 검사
 ========================================================= */
 
 restartButton.onclick = () => {
 
-  const ok = confirm(
-    "현재 검사 결과와 저장된 응답을 모두 삭제하고 처음부터 다시 할까요?"
+  const confirmed =
+    confirm(
+      "현재 기기에 저장된 검사 응답을 지우고 새 검사를 시작할까요?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  localStorage.removeItem(
+    STORAGE_KEY
   );
-
-  if (!ok) return;
-
-  localStorage.removeItem(STORAGE_KEY);
 
   location.reload();
 };
-
-
-/* 저장된 검사에 이미 이름과 응답이 있다면 안내 */
-
-if (
-  state.answers.some(v => v !== null)
-) {
-
-  const count =
-    state.answers.filter(v => v !== null).length;
-
-  startButton.textContent =
-    `이어하기 (${count}/${questions.length})`;
-}
 
 </script>
 
